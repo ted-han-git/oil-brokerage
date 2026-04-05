@@ -240,7 +240,7 @@ textarea.fi{resize:vertical;min-height:76px}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
-.prog-wrap{display:flex;align-items:center;gap:7py}
+.prog-wrap{display:flex;align-items:center;gap:7px}
 </style>
 </head>
 <body>
@@ -256,8 +256,6 @@ textarea.fi{resize:vertical;min-height:76px}
     <label class="login-lbl">비밀번호</label>
     <input class="login-inp" id="lpw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">로그인</button>
-    <div class="login-div">또는</div>
-    <div class="admin-link" onclick="openUserMgr()">관리자: 계정 관리 →</div>
   </div>
 </div>
 
@@ -280,6 +278,10 @@ textarea.fi{resize:vertical;min-height:76px}
     <button class="sb-btn" id="btn-hist" onclick="showPage('history')">◷ 전체 히스토리</button>
     <button class="sb-btn" onclick="exportJSON()">↓ JSON 내보내기</button>
     <button class="sb-btn" onclick="importJSON()">↑ JSON 가져오기</button>
+    <div id="sb-admin-section" class="hidden">
+      <div class="sb-sec" style="margin-top:3px">관리자</div>
+      <button class="sb-btn" onclick="openUserMgr()">⚙ 계정 관리</button>
+    </div>
     <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)">
     <div class="sb-sec" style="margin-top:3px">프로젝트</div>
     <div id="proj-list"></div>
@@ -340,6 +342,8 @@ function showApp(){
   document.getElementById('app-page').classList.remove('hidden');
   document.getElementById('sb-uname').textContent=CU.name;
   document.getElementById('sb-av').textContent=CU.name[0];
+  const adminSec=document.getElementById('sb-admin-section');
+  if(adminSec){CU.role==='admin'?adminSec.classList.remove('hidden'):adminSec.classList.add('hidden');}
   initApp();
 }
 function doLogout(){
@@ -349,6 +353,7 @@ function doLogout(){
   document.getElementById('lid').value=''; document.getElementById('lpw').value='';
 }
 async function openUserMgr(){
+  if(!CU||CU.role!=='admin'){alert('관리자 계정으로 로그인한 경우에만 접근할 수 있습니다.');return;}
   const users=await getUsers();
   showModal(`<div class="modal-title">계정 관리</div>
 <div style="margin-bottom:14px">${users.map(u=>`
@@ -858,7 +863,7 @@ ${(p.fields||[]).map(f=>`<div class="field-row" id="fr_${f.id}">
 </div>`;
 }
 
-// ─── PROG HISTORY ────────────────────────────────────────
+// ─── PROJ HISTORY ────────────────────────────────────────
 function renderPH(p){
   const ph=ST.history.filter(h=>h.projId===p.id);
   if(!ph.length)return'<div class="empty">히스토리 없음</div>';
