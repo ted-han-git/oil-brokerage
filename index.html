@@ -419,7 +419,7 @@ const DP=[
    ]},
    {label:'규제·제재 스크리닝',items:[
     {id:'i13',text:'OFAC, EU, UN 제재 목록 대조 (개인·법인·선박 IMO 번호)',priority:'req'},
-    {id:'i14',text:'PEP (Politically Exposed Person) 해당 헬부 확인',priority:'req'},
+    {id:'i14',text:'PEP (Politically Exposed Person) 해당 여부 확인',priority:'req'},
     {id:'i15',text:'AML (Anti-Money Laundering) 내부 정책 충족 여부 검토',priority:'req'},
     {id:'i16',text:'Enhanced Due Diligence (EDD) 절차 진행 (고위험 거래처)',priority:'rec'},
    ]},
@@ -505,49 +505,50 @@ const DP=[
  {id:'p6',num:'06',title:'물류 및 선적 관리',en:'Logistics & Shipping',color:{bg:'#e0f2fe',txt:'#075985'},
   categories:[
    {label:'선박 및 터미널',items:[
-    {id:'i49',text:'선박 수배 (Vese:'Certificate of Title Transfer',required:true,desc:'소유권 이전 증명서 – 매도인→매수인 명의 이전 공식화',alt:'Delivery Receipt + B/L Endorsement'},
-   {id:'d27',name:'Inspection Report (SGS/Intertek)',required:true,desc:'독립 검사 보고서 – 품질·수량 검사 결과 공식 기록',alt:'Buyer Self-Inspection Report (분쟁 시 불인정)'},
-  ]},
- {id:'p8',num:'08',title:'수수료 정산 및 사후 관리',en:'Settlement & Post-Deal',color:{bg:'#fef3c7',txt:'#92400e'},
-  categories:[
-   {label:'수수료 정산',items:[
-    {id:'i71',text:'거래 완료 후 커미션 Invoice 발행',priority:'req'},
-    {id:'i72',text:'수수료 수령 확인 및 내부 회계 처리',priority:'req'},
-    {id:'i73',text:'Fee Splitting 합의대로 공동 브로커 분배 처리',priority:'req'},
-    {id:'i74',text:'세금계산서·세금 신고 요건 충족 여부 확인',priority:'req'},
+    {id:'i49',text:'선박 수배 (Vessel Nomination) 및 셀러 승인 (Approval)',priority:'req'},
+    {id:'i50',text:'선박 검사 통과 확인 (Vetting: SIRE 2.0 기준 – OCIMF)',priority:'req'},
+    {id:'i51',text:'Q88 (Vessel Particulars Questionnaire) 수취',priority:'req'},
+    {id:'i52',text:'선박 도착 예정 통보 (NOR: Notice of Readiness) 수령',priority:'req'},
+    {id:'i53',text:'터미널 예약 및 Laytime / Demurrage 조건 확인',priority:'req'},
+    {id:'i54',text:'Charter Party Agreement (CPA) 검토',priority:'rec'},
    ]},
-   {label:'컴플라이언스 & 기록',items:[
-    {id:'i75',text:'모든 거래 서류 보관 (최소 5년, 규제 요건)',priority:'req'},
-    {id:'i76',text:'AML 보고 의무 (STR / CTR 등) 이행 확인',priority:'req'},
-    {id:'i77',text:'내부 거래 일지 (Deal Blotter) 업데이트',priority:'rec'},
-    {id:'i78',text:'클레임·분쟁 발생 여부 모니터링',priority:'rec'},
-   ]},
-   {label:'관계 관리',items:[
-    {id:'i79',text:'거래 결과 피드백 수집 및 거래처 관계 유지',priority:'rec'},
-    {id:'i80',text:'다음 거래 기회 탐색 및 파이프라인 업데이트',priority:'opt'},
-    {id:'i81',text:'시장 변화 기반 내부 리뷰 미팅 일정 수립',priority:'opt'},
+   {label:'선적 서류',items:[
+    {id:'i55',text:'선하증권 (B/L – Bill of Lading) 발행 및 내용 검토 – 3 Originals',priority:'req'},
+    {id:'i56',text:'원산지 증명서 (COO – Certificate of Origin) 수취',priority:'req'},
+    {id:'i57',text:'품질 검사 성적서 (CoQ – Certificate of Quality) 수취',priority:'req'},
+    {id:'i58',text:'수량 검사 성적서 (CoA – Certificate of Analysis) 수취',priority:'req'},
+    {id:'i59',text:'Ullage Report / Dip Test Report 수취',priority:'req'},
+    {id:'i60',text:'수출 신고서 (Export Declaration / Customs Clearance) 확인',priority:'req'},
+    {id:'i61',text:'Tank Cleanliness Certificate (탱크 청결 증명서) 수취',priority:'rec'},
    ]},
   ],
   documents:[
-   {id:'d28',name:'Commission Invoice',required:true,desc:'브로커 수수료 청구 송장 – 지급 기한·방식 명시',alt:'Fee Agreement + Wire Transfer Instruction'},
-   {id:'d29',name:'거래 완료 확인서',required:false,desc:'양 당사자 서명 거래 완료 확인 서류',alt:'Discharge Port Q&Q Report로 대체'},
-   {id:'d30',name:'AML 보고서 (STR/CTR)',required:true,desc:'의심 거래 보고 및 고액 현금 거래 보고 – 규제 당국 제출',alt:'Internal Compliance Report'},
+   {id:'d19',name:'B/L (Bill of Lading) – 3 Originals',required:true,desc:'선하증권 – 화물 수취증·운송계약서·권원증서. Blank Endorsed, Freight Prepaid 조건 확인',alt:'SeaWaybill (비유통 / Switch B/L)'},
+   {id:'d20',name:'Certificate of Origin (COO)',required:true,desc:'원산지 증명서 – 상공회의소 또는 정부 기관 발행. 유효기간 12개월',alt:'Form A (GSP 특혜 원산지)'},
+   {id:'d21',name:'CoQ (Certificate of Quality)',required:true,desc:'품질 성적서 – SGS / Intertek / Bureau Veritas 발행',alt:'Product Passport (출하 전 분석 보고서)'},
+   {id:'d22',name:'Ullage Report',required:true,desc:'선박 탱크 내 잔량·수분·온도 측정 보고서',alt:'Dip Test Report (탱크 팜 재고 확인용)'},
+   {id:'d23',name:'Q88 (Vessel Questionnaire)',required:true,desc:'선박 제원 질의서 – 탱크 용량·장비·SIRE 검사 이력 포함',alt:'CPA (Charter Party Agreement) 발췌본'},
   ]},
-];
-
-const DG=[
- {id:'g1',term:'SCO',full:'Soft Corporate Offer',def:'셀러가 발행하는 비구속적 초기 가격 제안서.'},
- {id:'g2',term:'FCO',full:'Full Corporate Offer',def:'셀러의 최종 공식 제안서. 바이어 서명 반환 시 구속력 발생.'},
- {id:'g3',term:'LOI',full:'Letter of Intent',def:'바이어의 구매 의향서. 협상 시작을 위한 공식 문서.'},
- {id:'g4',term:'ICPO',full:'Irrevocable Corporate Purchase Order',def:'바이어 발행 취소 불가 구매 주문서. 회사 레터헤드·서명·스탬프 필수. 5영업일 유효.'},
- {id:'g5',term:'SPA',full:'Sale & Purchase Agreement',def:'최종 매매 계약서. 거래의 핵심 법적 구속 문서.'},
- {id:'g6',term:'NCNDA',full:'Non-Circumvention Non-Disclosure Agreement',def:'브로커 우회 금지 및 기밀 유지 협약.'},
- {id:'g7',term:'IMFPA',full:'Inter-Mediary Fee Protection Agreement',def:'중개 수수료 보호 협약. NCNDA와 함께 체결.'},
- {id:'g8',term:'BCL',full:'Bank Comfort Letter',def:'바이어 거래 은행 발행 자금 확인 레터.'},
- {id:'g9',term:'RWA',full:'Ready, Willing and Able',def:'BCL 대체 문서. SWIFT MT799로 전송 가능.'},
- {id:'g10',term:'POF',full:'Proof of Funds',def:'자금 증빙 서류. BCL, RWA, 잔액 증명서 포함.'},
- {id:'g11',term:'SBLC',full:'Standby Letter of Credit',def:'지급 보증용 스탠바이 신용장. SWIFT MT760으로 전송.'},
- {id:'g12',term:'B/L',full:'Bill of Lading',def:'선하증권. 화물 수취증·운송계약서·권원증서 3e:'Certificate of Title Transfer',required:true,desc:'소유권 이전 증명서 – 매도인→매수인 명의 이전 공식화',alt:'Delivery Receipt + B/L Endorsement'},
+ {id:'p7',num:'07',title:'인도 및 검수',en:'Delivery & Inspection (Q&Q)',color:{bg:'#dcfce7',txt:'#166534'},
+  categories:[
+   {label:'현장 검수 (SGS)',items:[
+    {id:'i62',text:'독립 검사 기관 입회하 Q&Q 검사 실시 (Loadport & Disport)',priority:'req'},
+    {id:'i63',text:'선적 전 샘플 (Loadport Sample) 채취 및 봉인 보관',priority:'req'},
+    {id:'i64',text:'수령 시 실제 인도량 확인 및 Outturn Report 수취',priority:'req'},
+    {id:'i65',text:'품질 불일치 발생 시 클레임 절차 즉시 개시',priority:'req'},
+    {id:'i66',text:'Dip Test 수행 결과와 B/L 수량 비교 – ±0.3% 이내 확인',priority:'req'},
+   ]},
+   {label:'인도 완료 처리',items:[
+    {id:'i67',text:'탱크 게이지 측정 기록 보관',priority:'rec'},
+    {id:'i68',text:'Loss & Gain (손실·이득) 계산 및 허용 범위 확인',priority:'rec'},
+    {id:'i69',text:'Title Transfer (소유권 이전) 서류 완료 확인',priority:'req'},
+    {id:'i70',text:'Discharge Port Q&Q 결과 확인 후 잔금 결제 지시',priority:'req'},
+   ]},
+  ],
+  documents:[
+   {id:'d24',name:'Outturn Report',required:true,desc:'실제 인도량 보고서 – 선박 탱크·터미널 게이지 교차 확인',alt:'Shore Tank Receipt'},
+   {id:'d25',name:'NOR (Notice of Readiness)',required:true,desc:'선박이 항구 도착·하역 준비 완료 통보서. Laytime 기산점',alt:'ETA Notice (도착 예정 통보서)'},
+   {id:'d26',name:'Certificate of Title Transfer',required:true,desc:'소유권 이전 증명서 – 매도인→매수인 명의 이전 공식화',alt:'Delivery Receipt + B/L Endorsement'},
    {id:'d27',name:'Inspection Report (SGS/Intertek)',required:true,desc:'독립 검사 보고서 – 품질·수량 검사 결과 공식 기록',alt:'Buyer Self-Inspection Report (분쟁 시 불인정)'},
   ]},
  {id:'p8',num:'08',title:'수수료 정산 및 사후 관리',en:'Settlement & Post-Deal',color:{bg:'#fef3c7',txt:'#92400e'},
@@ -589,7 +590,54 @@ const DG=[
  {id:'g9',term:'RWA',full:'Ready, Willing and Able',def:'BCL 대체 문서. SWIFT MT799로 전송 가능.'},
  {id:'g10',term:'POF',full:'Proof of Funds',def:'자금 증빙 서류. BCL, RWA, 잔액 증명서 포함.'},
  {id:'g11',term:'SBLC',full:'Standby Letter of Credit',def:'지급 보증용 스탠바이 신용장. SWIFT MT760으로 전송.'},
- {id:'g12',term:'B/L',full:'Bill of Lading',def:'선하증권. 화물 수취증·운송계약서·권원증서 3!doc.metadata.hasPendingWrites){
+ {id:'g12',term:'B/L',full:'Bill of Lading',def:'선하증권. 화물 수취증·운송계약서·권원증서 3가지 기능. 3 Originals 발행.'},
+ {id:'g13',term:'COO',full:'Certificate of Origin',def:'원산지 증명서. 상공회의소 또는 정부 기관 발행. 유효기간 12개월.'},
+ {id:'g14',term:'Q&Q',full:'Quantity & Quality',def:'수량 및 품질 검사. 선적 전·후 독립 기관 입회 실시.'},
+ {id:'g15',term:'NOR',full:'Notice of Readiness',def:'선박 도착·하역 준비 완료 통보서. Laytime 기산점.'},
+ {id:'g16',term:'FOB',full:'Free On Board',def:'본선 인도. 셀러가 선적항 본선에 화물 적재까지 책임.'},
+ {id:'g17',term:'CIF',full:'Cost, Insurance & Freight',def:'운임·보험료 포함 인도. 셀러가 목적항까지 운임·보험 부담.'},
+ {id:'g18',term:'Laycan',full:'Laydays Cancelling',def:'선박 입항 허용 기간. 이 기간 내 NOR 제출 필수.'},
+ {id:'g19',term:'Demurrage',full:'Demurrage',def:'체선료. 계약 하역 시간(Laytime) 초과 시 발생하는 페널티.'},
+ {id:'g20',term:'SIRE',full:'Ship Inspection Report Programme',def:'OCIMF 운영 유조선 검사 프로그램. Vetting의 국제 표준.'},
+ {id:'g21',term:'OFAC',full:'Office of Foreign Assets Control',def:'미국 재무부 산하 경제 제재 집행 기관.'},
+ {id:'g22',term:'PEP',full:'Politically Exposed Person',def:'정치적으로 노출된 인물. 고위 공직자·가족·측근 포함. 고위험 KYC 분류.'},
+ {id:'g23',term:'AML',full:'Anti-Money Laundering',def:'자금 세탁 방지. STR(의심 거래 보고), CTR(고액 현금 거래 보고) 포함.'},
+ {id:'g24',term:'UBO',full:'Ultimate Beneficial Owner',def:'실질적 최종 수익 소유자. FATF 기준 25% 이상 지분 보유자.'},
+ {id:'g25',term:'PB',full:'Performance Bond',def:'이행 보증서. 보통 계약 총액의 2%. 셀러 미이행 시 바이어 청구 가능.'},
+ {id:'g26',term:'Incoterms',full:'International Commercial Terms',def:'국제 상거래 조건. ICC 제정. 2020년 기준 11가지 조건.'},
+ {id:'g27',term:'SGS',full:'Société Générale de Surveillance',def:'세계 최대 독립 검사·인증 기관. 스위스 본사.'},
+ {id:'g28',term:'STR',full:'Suspicious Transaction Report',def:'의심 거래 보고서. AML 규정에 따라 금융 당국에 제출.'},
+];
+
+// ─── STATE ──────────────────────────────────────────────
+let ST;
+let _firestoreListener=null;
+async function loadST(){
+  try{
+    const doc=await STATE_REF.get();
+    if(doc.exists) return doc.data();
+  }catch(e){console.warn('Firestore loadST 오류:',e);}
+  try{const s=localStorage.getItem('obm_state');if(s)return JSON.parse(s);}catch(e2){}
+  return{projects:[],history:[],glossary:JSON.parse(JSON.stringify(DG))};
+}
+function saveST(){
+  // localStorage 백업
+  try{localStorage.setItem('obm_state',JSON.stringify(ST));}catch(e){}
+  // Firestore 저장 (비동기, fire-and-forget)
+  STATE_REF.set(JSON.parse(JSON.stringify(ST))).catch(e=>console.warn('Firestore saveST 오류:',e));
+}
+function addHist(msg,color='#1a5fa8',pid,pname){ST.history.unshift({time:new Date().toISOString(),msg,color,projId:pid,projName:pname});if(ST.history.length>300)ST.history.pop();saveST();}
+
+// ─── ROUTING ─────────────────────────────────────────────
+let CP='dashboard',CPID=null,CT='checklist';
+async function initApp(){
+  ST=await loadST();
+  if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
+  renderSB();showPage('dashboard');
+  // 실시간 동기화 (다른 사용자 변경사항 자동 반영)
+  if(_firestoreListener)_firestoreListener();
+  _firestoreListener=STATE_REF.onSnapshot(doc=>{
+    if(doc.exists&&!doc.metadata.hasPendingWrites){
       const d=doc.data();
       if(d&&JSON.stringify(d)!==JSON.stringify(ST)){
         ST=d; if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
@@ -642,60 +690,67 @@ function renderDash(){
 <div class="sec-title">프로젝트 현황</div>
 ${!tot?'<div class="empty"><div style="font-size:28px;opacity:.3;margin-bottom:8px">◈</div><div>프로젝트가 없습니다. 새 프로젝트를 생성하세요.</div></div>':`
 <table class="proj-table">
-<thead><tr><th>프로젝트명</th><th>상태</th><th>1순위 바이어</th><th>셀러</th><th>선적항</th><th>거래 금액</th><th>진행률</th!doc.metadata.hasPendingWrites){
-      const d=doc.data();
-      if(d&&JSON.stringify(d)!==JSON.stringify(ST)){
-        ST=d; if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
-        renderSB(); renderMain();
-      }
-    }
-  },e=>console.warn('Firestore 실시간 오류:',e));
-}
-function showPage(page,pid){
-  CP=page; if(pid)CPID=pid;
-  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-  if(page==='dashboard')document.getElementById('btn-dash')?.classList.add('active');
-  if(page==='glossary')document.getElementById('btn-glos')?.classList.add('active');
-  if(page==='history')document.getElementById('btn-hist')?.classList.add('active');
-  renderSB(); renderMain();
-}
-function renderMain(){
-  const el=document.getElementById('main-area'); if(!el)return;
-  if(CP==='dashboard')el.innerHTML=renderDash();
-  else if(CP==='glossary')el.innerHTML=renderGlossary();
-  else if(CP==='history')el.innerHTML=renderHistory();
-  else if(CP==='project')el.innerHTML=renderProj();
+<thead><tr><th>프로젝트명</th><th>상태</th><th>1순위 바이어</th><th>셀러</th><th>선적항</th><th>거래 금액</th><th>진행률</th></tr></thead>
+<tbody>${ST.projects.map((p,i)=>`<tr onclick="showPage('project','${p.id}')">
+<td>${p.name}</td>
+<td><span class="ps ps-${p.status}">${p.status==='active'?'진행중':'완료'}</span></td>
+<td>${p.fields?.find(f=>f.key==='1순위 바이어')?.val||'—'}</td>
+<td>${p.fields?.find(f=>f.key==='셀러')?.val||'—'}</td>
+<td>${p.fields?.find(f=>f.key==='선적항 (Load Port)')?.val||'—'}</td>
+<td>${(()=>{const a=p.fields?.find(f=>f.key==='거래 금액 (USD)')?.val;return a?'$'+Number(a).toLocaleString():'—'})()}</td>
+<td><div class="prog-wrap"><div class="pbar"><div class="pbar-fill" style="width:${pcts[i]}%"></div></div><span style="font-size:11px;color:var(--text3)">${pcts[i]}%</span></div></td>
+</tr>`).join('')}</tbody></table>`}
+</div>`;
 }
 
-// ─── SIDEBAR ─────────────────────────────────────────────
-function renderSB(){
-  const el=document.getElementById('proj-list'); if(!el)return;
-  el.innerHTML=ST.projects.map(p=>`
-<div class="proj-item ${CPID===p.id&&CP==='project'?'active':''}" onclick="showPage('project','${p.id}')">
-  <div class="proj-dot"></div>
-  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${p.name}</span>
-  <span class="ps ps-${p.status}">${p.status==='active'?'진행':'완료'}</span>
-</div>`).join('')||'<div style="padding:5px 18px;font-size:11px;color:var(--text3)">프로젝트 없음</div>';
-}
+// ─── PROJECT DETAIL ──────────────────────────────────────
+function defaultFields(){return[
+  {id:'f1',key:'1순위 바이어',val:''},{id:'f2',key:'2순위 바이어',val:''},{id:'f3',key:'3순위 바이어',val:''},
+  {id:'f4',key:'셀러',val:''},{id:'f5',key:'선적항 (Load Port)',val:''},{id:'f6',key:'목적항 (Discharge Port)',val:''},
+  {id:'f7',key:'탱크 / 터미널',val:''},{id:'f8',key:'선사 / 선주',val:''},{id:'f9',key:'선박명 (Vessel)',val:''},
+  {id:'f10',key:'제품 (Crude Grade)',val:''},{id:'f11',key:'거래 금액 (USD)',val:''},{id:'f12',key:'물량 (BBL / MT)',val:''},
+  {id:'f13',key:'계약서 번호',val:''},{id:'f14',key:'인도 조건 (Incoterms)',val:''},{id:'f15',key:'Laycan',val:''},
+  {id:'f16',key:'브로커 수수료',val:''},
+];}
 
-// ─── DASHBOARD ───────────────────────────────────────────
-function renderDash(){
-  const tot=ST.projects.length, act=ST.projects.filter(p=>p.status==='active').length;
+function renderProj(){
+  const p=ST.projects.find(x=>x.id===CPID);
+  if(!p)return'<div class="content"><div class="empty">프로젝트를 찾을 수 없습니다</div></div>';
+  if(!p.checks)p.checks={};if(!p.docs)p.docs=[];if(!p.fields)p.fields=defaultFields();
+  if(!p.parties)p.parties=[
+    {id:'pt1',type:'1순위 바이어',cls:'pb1',name:'',info:''},
+    {id:'pt2',type:'2순위 바이어',cls:'pb2',name:'',info:''},
+    {id:'pt3',type:'3순위 바이어',cls:'pb3',name:'',info:''},
+    {id:'pt4',type:'셀러',cls:'pb3',name:'',info:''},
+    {id:'pt5',type:'선사 / 선주',cls:'pb3',name:'',info:''},
+    {id:'pt6',type:'탱크 / 터미널',cls:'pb3',name:'',info:''},
+  ];
   let tc=0,ti=0;
-  ST.projects.forEach(p=>p.phases.forEach(ph=>ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks&&p.checks[it.id])tc++;}))));
-  const pcts=ST.projects.map(p=>{let c=0,t=0;p.phases.forEach(ph=>ph.categories.forEach(cat=>cat.items.forEach(it=>{t++;if(p.checks&&p.checks[it.id])c++;})));return t?Math.round(c/t*100):0;});
-  return `<div class="topbar"><div><div class="pg-title">대시보드</div><div class="pg-sub">OIL BROKERAGE MANAGEMENT SYSTEM</div></div><div class="topbar-actions"><button class="btn btn-primary" onclick="openNewProjModal()">+ 새 프로젝트</button></div></div>
+  p.phases.forEach(ph=>ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks[it.id])tc++;})));
+  const pct=ti?Math.round(tc/ti*100):0;
+  const body=CT==='checklist'?renderCL(p):CT==='documents'?renderDocs(p):CT==='parties'?renderParties(p):CT==='fields'?renderFields(p):renderPH(p);
+  return `<div class="topbar">
+<div><div class="pg-title">${p.name}</div><div class="pg-sub">${p.id} · ${pct}% 완료</div></div>
+<div class="topbar-actions">
+  <button class="btn btn-outline" onclick="openEditProjModal('${p.id}')">✎ 편집</button>
+  <button class="btn btn-danger" onclick="delProj('${p.id}')">✕ 삭제</button>
+</div></div>
 <div class="content">
-<div class="stats-grid">
-  <div class="stat-card"><div class="stat-lbl">전체 프로젝트</div><div class="stat-val">${tot}</div><div class="stat-sub">${act}개 진행 중</div></div>
-  <div class="stat-card"><div class="stat-lbl">전체 완료율</div><div class="stat-val stat-accent">${ti?Math.round(tc/ti*100):0}%</div><div class="stat-sub">${tc} / ${ti} 항목</div></div>
-  <div class="stat-card"><div class="stat-lbl">활성 프로젝트</div><div class="stat-val">${act}</div><div class="stat-sub">진행 중</div></div>
-  <div class="stat-card"><div class="stat-lbl">히스토리</div><div class="stat-val">${ST.history.length}</div><div class="stat-sub">총 활동 기록</div></div>
-</div>
-<div class="sec-title">프로젝트 현황</div>
-${!tot?'<div class="empty"><div style="font-size:28px;opacity:.3;margin-bottom:8px">◈</div><div>프로젝트가 없습니다. 새 프로젝트를 생성하세요.</div></div>':`
-<table class="proj-table">
-<thead><tr><th>프로젝트명</th><th>상태</th><th>1순위 바이어</th><th>셀러</th><th>선적항</th><th>거래 금액</th><th>진행률</thelds||[]).slice(0,8).map(f=>`<div class="meta-item"><div class="meta-k">${f.key}</div><div class="meta-v">${f.val||'—'}</div></div>`).join('')}
+<div class="proj-hdr">
+  <div style="display:flex;align-items:flex-start;gap:12px">
+    <div style="flex:1">
+      <span class="proj-id-pill">${p.id}</span>
+      <span class="ps ps-${p.status}" style="margin-left:7px">${p.status==='active'?'진행중':'완료'}</span>
+      <div class="proj-big-name">${p.name}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:2px">전체 진행률</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--accent)">${pct}%</div>
+      <div style="font-size:11px;color:var(--text3)">${tc} / ${ti}</div>
+    </div>
+  </div>
+  <div class="meta-grid">
+    ${(p.fields||[]).slice(0,8).map(f=>`<div class="meta-item"><div class="meta-k">${f.key}</div><div class="meta-v">${f.val||'—'}</div></div>`).join('')}
   </div>
 </div>
 <div class="tabs">
@@ -709,7 +764,7 @@ function switchTab(t){CT=t;renderMain();}
 // ─── CHECKLIST ───────────────────────────────────────────
 function renderCL(p){
   return p.phases.map((ph,pi)=>{
-    let pc=0,pt=0;ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks[it.id])pc++;}));
+    let pc=0,pt=0;ph.categories.forEach(c=>c.items.forEach(it=>{pt++;if(p.checks[it.id])pc++;}));
     const pp=pt?Math.round(pc/pt*100):0;
     return `<div class="phase-block">
 <div class="phase-hdr" onclick="togPh('ph_${p.id}_${pi}')">
@@ -750,67 +805,6 @@ ${cat.items.map((it,ii)=>`
 // ─── DOCUMENTS ───────────────────────────────────────────
 function renderDocs(p){
   return p.phases.map((ph,pi)=>`<div class="phase-block">
-<div class="phase-hdr" onclick="togPh('dc_${p.id}_${pi}')">
-  <div class="ph-num" style="background:${ph.color.bg};color:${ph.color.txt}">${ph.num}</div>
-  <div style="flex:1"><div class="ph-title">${ph.title}</div><div class="ph-sub">서류 ${ph.documents.length}건</div></div>
-  <div class="chev" id="chev_dc_${p.id}_${pi}">▶</div>
-</div>
-<div class="phase-body" id="dc_${p.id}_${pi}">
-  <div class="doc-grid">${ph.documents.map(d=>{
-    const ds=(p.docs||[]).find(x=>x.id===d.id), st=ds?ds.status:'pending';
-    return`<div class="doc-card">
-<button class="doc-del" onclick="delDoc('${p.id}','${ph.id}','${d.id}')">✕</button>
-<div class="doc-name">${d.name}</div>
-${d.required?'<span class="doc-req-lbl">필수</span>':'<span style="font-size:9px;color:var(--text3);font-family:IBM Plex Mono,monospace">선택</span>'}
-<div class="doc-desc">${d.desc}</div>
-${d.alt?`<div class="doc-alt">대체: ${d.alt}</div>`:''}
-<div class="doc-stat ${st==='received'?'received':st==='missing'?'missing':''}" onclick="cycleDoc('${p.id}','${d.id}')">
-  ${st==='received'?'✓ 수령 완료':st==='missing'?'✗ 미수령':'○ 대기중'}
-</div></div>`;}).join('')}</div>
-  <div class="add-doc-row">
-    <button class="btn btn-outline btn-sm" onclick="openAddDoc('${p.id}','${ph.id}')">+ 서류 추가</button>
-  </div>
-</div></div>`).join('');
-}
-
-// ─── PARTIES ─────────────────────────────────────────────
-function renderParties(p){
-  return `<div class="parties-grid">${p.parties.map(pt=>`
-<div class="party-card">
-  <div class="party-type-lbl">${pt.type}</div>
-  <span class="party-badge ${pt.cls}">${pt.type}</span>
-  <div class="party-name">${pt.name||'(미입력)'}</div>
-  <div class="party-info">${(pt.info||'').replace(/\n/g,'<br>')||'<span style="color:var(--text3);font-size:11px">상세 정보 없음</span>'}</div>
-  <div style="display:flex;gap:6px;margin-top:10px">
-    <button class="btn btn-outline btn-sm" style="flex:1" onclick="openPartyEdit('${p.id}','${pt.id}')">✎ 편집</button>
-    <button class="btn btn-danger btn-sm" onclick="delParty('${p.id}','${pt.id}')">✕</button>
-  </div>
-</div>`).join('')}</div>
-<button class="btn btn-outline" style="margin-top:9px" onclick="openAddParty('${p.id}')">+ 당사자 추가</button>`;
-}
-
-// ─── FIELDS ──────────────────────────────────────────────
-function renderFields(p){
-  return `<div class="fields-card">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-  <div style="font-size:13px;font-weight:500">프로젝트 정보 필드</div>
-  <button class="btn btn-outline btn-sm" onclick="openAddField('${p.id}')">+ 필드 추가</button>
-</div>
-${(p.fields||[]).map(f=>`<div class="field-row" id="fr_${f.id}">
-  <div class="field-key">${f.key}</div>
-  <button class="field-val-btn" onclick="editFV('${p.id}','${f.id}')">${f.val||'<span style="color:var(--text3);font-weight:400">클릭하여 입력</span>'}</button>
-  <button class="field-del-btn" onclick="delField('${p.id}','${f.id}')">✕</button>
-</div>`).join('')}
-</div>`;
-}
-
-// ─── PROJ HISTORY ────────────────────────────────────────
-function renderPH(p){
-  const ph=ST.history.filter(h=>h.projId===p.id);
-  if(!ph.length)return'<div class="empty">히스토리 없음</div>';
-  return ph.map(h=>`<div class="hist-item">
-<div class="hist-dot" style="background:${h.color}"></div>
-<div class="hist-time">${new Date(h.time).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digiase-block">
 <div class="phase-hdr" onclick="togPh('dc_${p.id}_${pi}')">
   <div class="ph-num" style="background:${ph.color.bg};color:${ph.color.txt}">${ph.num}</div>
   <div style="flex:1"><div class="ph-title">${ph.title}</div><div class="ph-sub">서류 ${ph.documents.length}건</div></div>
