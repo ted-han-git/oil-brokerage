@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oil Brokerage Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase SDK (v9 compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#f8f7f4;--bg2:#ffffff;--bg3:#f2f1ee;--bg4:#ebe9e4;
+  --border:#e4e2dc;--border2:#cccab8;
+  --text:#1a1916;--text2:#5a5750;--text3:#9e9b93;
+  --accent:#b8820a;--accent2:#d49b1a;--accent-bg:#fdf6e3;--accent-border:rgba(184,130,10,0.22);
+  --red:#c94040;--red-bg:#fdf0f0;--red-border:rgba(201,64,64,0.2);
+  --green:#2e7d52;--green-bg:#f0f9f4;
+  --blue:#1a5fa8;--blue-bg:#f0f6fd;
+  --amber:#a06800;--amber-bg:#fdf5e0;
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.09),0 2px 4px rgba(0,0,0,0.05);
+  --r:8px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+.hidden{display:none!important}
+
+/* LOGIN */
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fdf9f0 0%,#f0f4ff 100%)}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:400px;box-shadow:var(--shadow-md)}
+.login-logo{font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);margin-bottom:3px}
+.login-sub{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:32px}
+.login-lbl{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block;letter-spacing:0.3px}
+.login-inp{width:100%;border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;font-size:14px;font-family:'Pretendard',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s,background 0.15s;margin-bottom:12px}
+.login-inp:focus{border-color:var(--accent);background:#fff}
+.login-btn{width:100%;padding:11px;border-radius:var(--r);background:var(--text);color:#fff;font-size:14px;font-weight:500;font-family:'Pretendard',sans-serif;border:none;cursor:pointer;transition:background 0.15s;margin-top:4px}
+.login-btn:hover{background:#2e2c28}
+.login-err{font-size:12px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r);padding:8px 12px;margin-bottom:12px;display:none}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:18px}
+.login-div{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text3);font-size:11px}
+.login-div::before,.login-div::after{content:'';flex:1;height:1px;background:var(--border)}
+.admin-link{font-size:12px;color:var(--accent);text-align:center;cursor:pointer;margin-top:10px;text-decoration:underline}
+
+/* APP */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:252px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+
+/* SIDEBAR */
+.sb-logo{padding:20px 18px 12px;border-bottom:1px solid var(--border)}
+.sb-logo-en{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text)}
+.sb-logo-ko{font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:9px 14px;margin:8px 8px 0;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)}
+.sb-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0}
+.sb-uname{font-size:12px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{font-size:10px;color:var(--text3);cursor:pointer;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:none;font-family:'Pretendard',sans-serif;transition:all 0.12s}
+.logout-btn:hover{color:var(--red);border-color:var(--red-border)}
+.sb-sec{padding:12px 14px 5px;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--r);cursor:pointer;margin:1px 7px;color:var(--text2);transition:all 0.12s;font-size:13px;border:none;background:none;width:calc(100% - 14px);text-align:left;font-family:'Pretendard',sans-serif}
+.sb-btn:hover{background:var(--bg3);color:var(--text)}
+.sb-btn.active{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.proj-item{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:var(--r);cursor:pointer;margin:1px 7px;color:var(--text2);transition:all 0.12s;font-size:12px}
+.proj-item:hover{background:var(--bg3);color:var(--text)}
+.proj-item.active{background:var(--accent-bg);color:var(--accent)}
+.proj-dot{width:5px;height:5px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.proj-item.active .proj-dot{background:var(--accent)}
+.ps{margin-left:auto;font-size:9px;padding:1px 6px;border-radius:99px;font-family:'IBM Plex Mono',monospace}
+.ps-active{background:var(--green-bg);color:var(--green)}
+.ps-closed{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.new-proj-btn{margin:7px;padding:8px 12px;border:1.5px dashed var(--border2);border-radius:var(--r);cursor:pointer;color:var(--text3);font-size:12px;text-align:center;transition:all 0.15s;background:none;font-family:'Pretendard',sans-serif}
+.new-proj-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+
+/* TOPBAR */
+.topbar{padding:16px 26px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;background:var(--bg2);box-shadow:var(--shadow)}
+.pg-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);flex:1}
+.pg-sub{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px}
+.topbar-actions{display:flex;gap:7px}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:var(--r);font-size:12px;cursor:pointer;border:none;font-family:'Pretendard',sans-serif;font-weight:500;transition:all 0.12s}
+.btn-primary{background:var(--text);color:#fff}.btn-primary:hover{background:#2e2c28}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--text3);border:none;padding:6px 9px}.btn-ghost:hover{color:var(--text);background:var(--bg3)}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}.btn-danger:hover{background:rgba(201,64,64,0.14)}
+.btn-sm{padding:4px 9px;font-size:11px}
+
+/* CONTENT */
+.content{padding:20px 26px;flex:1}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:15px 17px;box-shadow:var(--shadow)}
+.stat-lbl{font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:5px}
+.stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.stat-accent{color:var(--accent)}
+
+/* SECTION TITLE */
+.sec-title{font-size:10px;color:var(--text3);letter-spacing:1.8px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:11px;display:flex;align-items:center;gap:10px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TABLE */
+.proj-table{width:100%;border-collapse:collapse;background:var(--bg2);border-radius:var(--rl);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
+.proj-table th{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg3)}
+.proj-table td{padding:10px 13px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+.proj-table tr:last-child td{border-bottom:none}
+.proj-table tr:hover td{background:var(--bg3);cursor:pointer}
+.proj-table td:first-child{color:var(--text);font-weight:500}
+.pbar{background:var(--bg4);border-radius:99px;height:4px;width:72px;overflow:hidden;display:inline-block;vertical-align:middle}
+.pbar-fill{height:100%;border-radius:99px;background:var(--accent)}
+
+/* PROJ HEADER */
+.proj-hdr{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow)}
+.proj-id-pill{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);background:var(--accent-bg);padding:2px 10px;border-radius:99px;border:1px solid var(--accent-border)}
+.proj-big-name{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);margin-top:5px;flex:1}
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}
+.meta-item{background:var(--bg3);border-radius:var(--r);padding:9px 11px;border:1px solid var(--border)}
+.meta-k{font-size:10px;color:var(--text3);margin-bottom:2px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.7px;text-transform:uppercase}
+.meta-v{font-size:12px;color:var(--text);font-weight:500}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.tab{padding:7px 15px;cursor:pointer;font-size:13px;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.12s}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+
+/* PHASE BLOCKS */
+.phase-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:9px;overflow:hidden;box-shadow:var(--shadow)}
+.phase-hdr{display:flex;align-items:center;gap:9px;padding:12px 15px;cursor:pointer;transition:background 0.12s}
+.phase-hdr:hover{background:var(--bg3)}
+.ph-num{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;flex-shrink:0}
+.ph-title{flex:1;font-size:14px;font-weight:500;color:var(--text)}
+.ph-sub{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:1px}
+.ph-pill{font-size:10px;padding:2px 8px;border-radius:99px;font-family:'IBM Plex Mono',monospace}
+.chev{color:var(--text3);font-size:11px;transition:transform 0.18s}
+.chev.open{transform:rotate(90deg)}
+.phase-body{display:none}
+.phase-body.open{display:block}
+
+/* CATEGORIES */
+.cat-lbl-row{display:flex;align-items:center;justify-content:space-between;padding:7px 15px 5px;background:var(--bg3);border-top:1px solid var(--border)}
+.cat-lbl{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+
+/* CHECK ITEMS */
+.check-row{display:flex;align-items:flex-start;gap:9px;padding:8px 15px;border-top:1px solid var(--border);transition:background 0.1s}
+.check-row:hover{background:var(--bg3)}
+.check-row input[type=checkbox]{width:14px;height:14px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--accent)}
+.check-txt{flex:1;font-size:13px;color:var(--text2);line-height:1.5;cursor:pointer}
+.check-row.done .check-txt{text-decoration:line-through;color:var(--text3)}
+.badge{font-size:9px;padding:2px 7px;border-radius:99px;font-family:'IBM Plex Mono',monospace;flex-shrink:0;margin-top:2px}
+.b-req{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.b-rec{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(160,104,0,0.18)}
+.b-opt{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.del-btn{width:19px;height:19px;border-radius:4px;border:1px solid transparent;background:none;cursor:pointer;color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0;transition:all 0.12s;margin-top:1px;font-family:'Pretendard',sans-serif}
+.check-row:hover .del-btn{opacity:1}
+.del-btn:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-border);opacity:1}
+
+/* ADD ROW */
+.add-row{display:flex;gap:6px;padding:6px 15px;background:rgba(0,0,0,0.01);border-top:1px solid var(--border)}
+.add-inp{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 9px;color:var(--text);font-size:12px;font-family:'Pretendard',sans-serif;outline:none;transition:border-color 0.12s}
+.add-inp:focus{border-color:var(--accent);background:#fff}
+.add-inp::placeholder{color:var(--text3)}
+.add-sel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 7px;color:var(--text2);font-size:11px;font-family:'Pretendard',sans-serif;outline:none;cursor:pointer}
+.add-btn{padding:6px 11px;border-radius:var(--r);background:var(--text);color:#fff;font-size:11px;font-weight:500;border:none;cursor:pointer;font-family:'Pretendard',sans-serif;transition:background 0.12s;white-space:nowrap}
+.add-btn:hover{background:#2e2c28}
+
+/* DOCUMENT CARDS */
+.doc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:10px 15px 12px}
+.doc-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;position:relative}
+.doc-card:hover .doc-del{opacity:1}
+.doc-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px}
+.doc-req-lbl{font-size:9px;color:var(--red);font-family:'IBM Plex Mono',monospace}
+.doc-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px}
+.doc-alt{font-size:10px;color:var(--amber);margin-top:5px;padding:3px 7px;background:var(--amber-bg);border-radius:4px;border:1px solid rgba(160,104,0,0.12)}
+.doc-stat{display:inline-flex;align-items:center;gap:4px;font-size:10px;margin-top:7px;cursor:pointer;padding:3px 8px;border-radius:5px;background:var(--bg4);color:var(--text3);border:1px solid var(--border);transition:all 0.12s;font-family:'IBM Plex Mono',monospace}
+.doc-stat:hover{border-color:var(--border2)}
+.doc-stat.received{background:var(--green-bg);color:var(--green);border-color:rgba(46,125,82,0.2)}
+.doc-stat.missing{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.doc-del{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all 0.12s;font-family:'Pretendard',sans-serif}
+.doc-del:hover{background:var(--red-bg);color:var(--red)}
+.add-doc-row{padding:6px 15px 11px;border-top:1px solid var(--border)}
+
+/* PARTIES */
+.parties-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.party-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;box-shadow:var(--shadow)}
+.party-type-lbl{font-size:10px;color:var(--text3);letter-spacing:1.3px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:5px}
+.party-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:99px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-weight:500}
+.pb1{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.pb2{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(26,95,168,0.2)}
+.pb3{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.party-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.party-info{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* FIELDS */
+.fields-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.field-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.field-row:last-child{border-bottom:none}
+.field-key{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;width:155px;flex-shrink:0}
+.field-val-btn{flex:1;font-size:13px;color:var(--text);font-weight:500;cursor:pointer;padding:3px 6px;border-radius:5px;border:1px solid transparent;transition:all 0.12s;background:none;font-family:'Pretendard',sans-serif;text-align:left}
+.field-val-btn:hover{background:var(--bg3);border-color:var(--border)}
+.field-inp{flex:1;font-size:13px;color:var(--text);padding:4px 8px;border-radius:5px;border:1px solid var(--accent);background:#fff;font-family:'Pretendard',sans-serif;outline:none}
+.field-del-btn{width:20px;height:20px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all 0.12s;font-family:'Pretendard',sans-serif}
+.field-row:hover .field-del-btn{opacity:1}
+.field-del-btn:hover{background:var(--red-bg);color:var(--red);opacity:1}
+
+/* GLOSSARY */
+.glos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.glos-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;box-shadow:var(--shadow);position:relative}
+.glos-item:hover .glos-del{opacity:1}
+.glos-term{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);font-weight:500;margin-bottom:2px}
+.glos-full{font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:500}
+.glos-def{font-size:11px;color:var(--text3);line-height:1.5}
+.glos-del{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:12px;opacity:0;transition:all 0.12s;font-family:'Pretendard',sans-serif}
+.glos-del:hover{background:var(--red-bg);color:var(--red)}
+
+/* HISTORY */
+.hist-item{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.hist-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.hist-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;min-width:85px}
+.hist-msg{font-size:12px;color:var(--text2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:26px;width:560px;max-height:84vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.modal-title{font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);margin-bottom:18px}
+.fg{margin-bottom:13px}
+.fl{font-size:11px;color:var(--text3);letter-spacing:0.7px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:5px;display:block}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;font-family:'Pretendard',sans-serif;outline:none;transition:border-color 0.12s}
+.fi:focus{border-color:var(--accent);background:#fff}
+.fi::placeholder{color:var(--text3)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+textarea.fi{resize:vertical;min-height:76px}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--text);color:#fff;border-radius:var(--r);padding:9px 15px;font-size:13px;z-index:300;animation:tin 0.18s;pointer-events:none;box-shadow:var(--shadow-md)}
+@keyframes tin{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.prog-wrap{display:flex;align-items:center;gap:7px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">Oil Brokerage</div>
+    <div class="login-sub">거래 관리 시스템</div>
+    <div id="login-err" class="login-err"></div>
+    <label class="login-lbl">아이디</label>
+    <input class="login-inp" id="lid" type="text" placeholder="아이디 입력" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="login-lbl">비밀번호</label>
+    <input class="login-inp" id="lpw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div class="login-div">또는</div>
+    <div class="login-hint">기본 계정 — 아이디: <strong>admin</strong> / 비밀번호: <strong>1234</strong></div>
+    <div class="admin-link" onclick="openUserMgr()">관리자: 계정 관리 →</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-page" class="hidden">
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-en">Oil Brokerage</div>
+      <div class="sb-logo-ko">거래 관리 시스템</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-av">A</div>
+      <div class="sb-uname" id="sb-uname">관리자</div>
+      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    </div>
+    <div class="sb-sec">메뉴</div>
+    <button class="sb-btn" id="btn-dash" onclick="showPage('dashboard')">◈ 대시보드</button>
+    <button class="sb-btn" id="btn-glos" onclick="showPage('glossary')">◎ 용어 사전</button>
+    <button class="sb-btn" id="btn-hist" onclick="showPage('history')">◷ 전체 히스토리</button>
+    <button class="sb-btn" onclick="exportJSON()">↓ JSON 내보내기</button>
+    <button class="sb-btn" onclick="importJSON()">↑ JSON 가져오기</button>
+    <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)">
+    <div class="sb-sec" style="margin-top:3px">프로젝트</div>
+    <div id="proj-list"></div>
+    <button class="new-proj-btn" onclick="openNewProjModal()">+ 새 프로젝트 생성</button>
+  </div>
+  <div class="main" id="main-area"></div>
+</div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+// ─── FIREBASE 설정 ────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyBwg8Y_4ZwIACVDm-B5G101VjsmakLUBGM",
+  authDomain:        "oil-brokerage.firebaseapp.com",
+  projectId:         "oil-brokerage",
+  storageBucket:     "oil-brokerage.firebasestorage.app",
+  messagingSenderId: "203087910095",
+  appId:             "1:203087910095:web:6969739e1ee80f1e2313ba"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const STATE_REF = db.collection('obm').doc('state');
+const USERS_REF = db.collection('obm').doc('users');
+
+// ─── AUTH ───────────────────────────────────────────────
+async function getUsers(){
+  try{
+    const doc=await USERS_REF.get();
+    if(doc.exists) return doc.data().list||[];
+  }catch(e){console.warn('Firestore getUsers 오류:',e);}
+  try{return JSON.parse(localStorage.getItem('obm_users')||'null')||[{id:'admin',pw:'1234',name:'관리자',role:'admin'}];}catch(e2){}
+  return [{id:'admin',pw:'1234',name:'관리자',role:'admin'}];
+}
+async function saveUsers(u){
+  try{await USERS_REF.set({list:u});}catch(e){
+    console.warn('Firestore saveUsers 오류:',e);
+    localStorage.setItem('obm_users',JSON.stringify(u));
+  }
+}
+let CU=null;
+async function doLogin(){
+  const id=document.getElementById('lid').value.trim(), pw=document.getElementById('lpw').value;
+  const err=document.getElementById('login-err');
+  err.textContent='확인 중...'; err.style.display='block';
+  const users=await getUsers();
+  const user=users.find(u=>u.id===id&&u.pw===pw);
+  if(!user){err.textContent='아이디 또는 비밀번호가 올바르지 않습니다.';err.style.display='block';return;}
+  err.style.display='none'; CU=user;
+  sessionStorage.setItem('obm_ses',JSON.stringify(user));
+  showApp();
+}
+function showApp(){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app-page').classList.remove('hidden');
+  document.getElementById('sb-uname').textContent=CU.name;
+  document.getElementById('sb-av').textContent=CU.name[0];
+  initApp();
+}
+function doLogout(){
+  CU=null; sessionStorage.removeItem('obm_ses');
+  document.getElementById('app-page').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  document.getElementById('lid').value=''; document.getElementById('lpw').value='';
+}
+async function openUserMgr(){
+  const users=await getUsers();
+  showModal(`<div class="modal-title">계정 관리</div>
+<div style="margin-bottom:14px">${users.map(u=>`
+<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)">
+  <span style="flex:1;font-size:13px;font-weight:500">${u.name}</span>
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)">${u.id}</span>
+  <span style="font-size:9px;padding:2px 7px;border-radius:99px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);font-family:'IBM Plex Mono',monospace">${u.role==='admin'?'관리자':'사용자'}</span>
+  ${u.id!=='admin'?`<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">삭제</button>`:'<span style="width:40px"></span>'}
+</div>`).join('')}</div>
+<div style="background:var(--bg3);border-radius:var(--r);padding:13px;border:1px solid var(--border)">
+  <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:9px">새 계정 추가</div>
+  <div class="fg2">
+    <div class="fg"><label class="fl">아이디</label><input class="fi" id="nu_id" placeholder="로그인 아이디"></div>
+    <div class="fg"><label class="fl">비밀번호</label><input class="fi" id="nu_pw" type="password" placeholder="비밀번호"></div>
+  </div>
+  <div class="fg2">
+    <div class="fg"><label class="fl">이름</label><input class="fi" id="nu_name" placeholder="표시 이름"></div>
+    <div class="fg"><label class="fl">권한</label><select class="fi" id="nu_role"><option value="user">사용자</option><option value="admin">관리자</option></select></div>
+  </div>
+  <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="addUser()">계정 추가</button>
+</div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">닫기</button></div>`);
+}
+async function addUser(){
+  const id=v('nu_id'),pw=v('nu_pw'),name=v('nu_name'),role=v('nu_role');
+  if(!id||!pw||!name){alert('모든 항목을 입력하세요');return;}
+  const users=await getUsers();
+  if(users.find(u=>u.id===id)){alert('이미 존재하는 아이디입니다');return;}
+  users.push({id,pw,name,role}); await saveUsers(users); showToast('계정이 추가되었습니다'); openUserMgr();
+}
+async function deleteUser(id){
+  if(!confirm('이 계정을 삭제할까요?'))return;
+  const users=await getUsers();
+  await saveUsers(users.filter(u=>u.id!==id)); showToast('계정이 삭제되었습니다'); openUserMgr();
+}
+(async function(){const s=sessionStorage.getItem('obm_ses');if(s){try{CU=JSON.parse(s);showApp();}catch(e){}}})();
+
+// ─── DEFAULT DATA ────────────────────────────────────────
+const DP=[
+ {id:'p1',num:'01',title:'거래 기회 발굴 및 초기 접촉',en:'Deal Origination',color:{bg:'#dbeafe',txt:'#1a5fa8'},
+  categories:[
+   {label:'시장 정보 수집',items:[
+    {id:'i1',text:'원유·정제유 시장 동향 및 가격 분석 (Platts, Argus 기준)',priority:'req'},
+    {id:'i2',text:'Buy / Sell 오퍼 접수 및 진위 여부 초기 확인',priority:'req'},
+    {id:'i3',text:'공급 가능 물량·품질 (Crude Grade, Specification) 확인',priority:'req'},
+    {id:'i4',text:'선적 일정 및 가용 Cargo 확인',priority:'rec'},
+    {id:'i5',text:'경쟁 브로커·트레이더 동향 파악',priority:'opt'},
+   ]},
+   {label:'거래 상대방 탐색',items:[
+    {id:'i6',text:'Buyer / Seller 매칭 가능 여부 검토 (1·2·3순위 바이어 설정)',priority:'req'},
+    {id:'i7',text:'상대방 연락처·권한 보유 여부 확인 (Mandate Letter)',priority:'req'},
+    {id:'i8',text:'Chain 구조 (브로커 개입 단계) 파악 및 정리',priority:'rec'},
+   ]},
+  ],
+  documents:[
+   {id:'d1',name:'SCO (Soft Corporate Offer)',required:true,desc:'셀러가 발행하는 초기 비구속적 가격 제안서',alt:'Pre-offer / Indicative Offer'},
+   {id:'d2',name:'LOI (Letter of Intent)',required:true,desc:'바이어의 구매 의향서. 회사 레터헤드 필수, 5영업일 이내 유효',alt:'MOU (Memorandum of Understanding)'},
+   {id:'d3',name:'회사 프로파일 (CP)',required:true,desc:'회사 소개서 – 설립연도, 사업분야, 주요 거래 실적 포함',alt:null},
+  ]},
+ {id:'p2',num:'02',title:'상대방 실사 (KYC/KYB)',en:'Counterparty Due Diligence',color:{bg:'#fef9c3',txt:'#92400e'},
+  categories:[
+   {label:'법적 실체 확인',items:[
+    {id:'i9',text:'회사 등록 서류 (Certificate of Incorporation) 수취 및 검토',priority:'req'},
+    {id:'i10',text:'실소유자 (UBO – Ultimate Beneficial Owner) 확인',priority:'req'},
+    {id:'i11',text:'국적·설립지 기반 제재 대상 여부 1차 확인',priority:'req'},
+    {id:'i12',text:'사업자 활동 이력 및 재무 현황 파악',priority:'rec'},
+   ]},
+   {label:'규제·제재 스크리닝',items:[
+    {id:'i13',text:'OFAC, EU, UN 제재 목록 대조 (개인·법인·선박 IMO 번호)',priority:'req'},
+    {id:'i14',text:'PEP (Politically Exposed Person) 해당 헬부 확인',priority:'req'},
+    {id:'i15',text:'AML (Anti-Money Laundering) 내부 정책 충족 여부 검토',priority:'req'},
+    {id:'i16',text:'Enhanced Due Diligence (EDD) 절차 진행 (고위험 거래처)',priority:'rec'},
+   ]},
+   {label:'신용도 평가',items:[
+    {id:'i17',text:'신용 한도 (Credit Line) 설정 또는 기존 한도 확인',priority:'req'},
+    {id:'i18',text:'결제 이행 능력 및 과거 결제 기록 확인',priority:'req'},
+    {id:'i19',text:'필요 시 보증서 (LoC, BG) 요구 여부 결정',priority:'rec'},
+   ]},
+  ],
+  documents:[
+   {id:'d4',name:'Certificate of Incorporation',required:true,desc:'법인 설립 등록증 – 정부기관 발행',alt:'Business License / Trade License'},
+   {id:'d5',name:'여권 사본 (Passport Copy)',required:true,desc:'권한 보유자 및 UBO의 신분증 사본',alt:'국가 신분증 (National ID)'},
+   {id:'d6',name:'BCL (Bank Comfort Letter)',required:true,desc:'바이어 거래은행 발행 자금 확인 레터',alt:'RWA Letter / POF / MT799 SWIFT'},
+   {id:'d7',name:'NCNDA / IMFPA',required:true,desc:'브로커 우회 금지·기밀 유지·수수료 보호 협약',alt:'NCND 단독 협약'},
+  ]},
+ {id:'p3',num:'03',title:'거래 조건 협상 및 LOI',en:'Negotiation & LOI',color:{bg:'#dcfce7',txt:'#166534'},
+  categories:[
+   {label:'가격·물량 협상',items:[
+    {id:'i20',text:'기준가 (Brent / WTI / Dubai) 및 프리미엄·디스카운트 합의',priority:'req'},
+    {id:'i21',text:'거래 물량 (Volume, MT or BBL), 허용 편차 (Tolerance ±%) 확정',priority:'req'},
+    {id:'i22',text:'가격 결정 방식 (Pricing Period, Average 방식) 합의',priority:'req'},
+    {id:'i23',text:'브로커 수수료 (Commission, $/BBL 또는 %) 구조 확정',priority:'req'},
+    {id:'i24',text:'인도 조건 (Incoterms: FOB / CIF / DES / DAP) 합의',priority:'req'},
+   ]},
+   {label:'LOI / ICPO 문서화',items:[
+    {id:'i25',text:'ICPO (Irrevocable Corporate Purchase Order) 작성 – 레터헤드 날인',priority:'req'},
+    {id:'i26',text:'FCO (Full Corporate Offer) 셀러 수취 및 검토·서명 반환',priority:'req'},
+    {id:'i27',text:'거래 유효 기간 (Expiry Date) 명시',priority:'req'},
+    {id:'i28',text:'중재 조항 (ICC / LCIA) 포함 여부 확인',priority:'rec'},
+   ]},
+  ],
+  documents:[
+   {id:'d8',name:'ICPO (Irrevocable Corporate Purchase Order)',required:true,desc:'바이어 발행 구속력 있는 구매 주문서. 서명·스탬프 필수. 5영업일 유효',alt:'LOI + BCL 조합'},
+   {id:'d9',name:'FCO (Full Corporate Offer)',required:true,desc:'셀러 발행 최종 가격·조건 제안서',alt:'SCO + 가격 확정 메일'},
+   {id:'d10',name:'Proforma Invoice (PI)',required:false,desc:'선적 전 견적 송장 – 물량·가격·조건 정리. LC 발행 기준 서류',alt:'Commercial Invoice 초안'},
+  ]},
+ {id:'p4',num:'04',title:'계약 체결',en:'Contract Execution (SPA)',color:{bg:'#fce7f3',txt:'#9d174d'},
+  categories:[
+   {label:'매매 계약 (SPA)',items:[
+    {id:'i29',text:'Sale & Purchase Agreement 최종본 법무 검토',priority:'req'},
+    {id:'i30',text:'상품 규격서 (Product Passport) 계약서 첨부',priority:'req'},
+    {id:'i31',text:'인도 조건 (Incoterms) 명확히 기재',priority:'req'},
+    {id:'i32',text:'선적항·목적항·인도일·Laycan 명시',priority:'req'},
+    {id:'i33',text:'Q&Q 검사 기관 지정 (SGS / Intertek / Bureau Veritas)',priority:'req'},
+    {id:'i34',text:'페널티 조항 (2% PB Performance Bond) 포함 확인',priority:'req'},
+    {id:'i35',text:'Force Majeure, Confidentiality 조항 포함 확인',priority:'rec'},
+   ]},
+   {label:'브로커리지 계약',items:[
+    {id:'i36',text:'Brokerage / Commission Agreement 서명 완료',priority:'req'},
+    {id:'i37',text:'수수료율 및 분배 구조 서면 명시',priority:'req'},
+    {id:'i38',text:'Fee Splitting (브로커 간 분배) 합의 서면화',priority:'req'},
+    {id:'i39',text:'NCNDA / IMFPA 최종 체결 및 보관',priority:'req'},
+   ]},
+  ],
+  documents:[
+   {id:'d11',name:'SPA (Sale & Purchase Agreement)',required:true,desc:'매매 계약서 – 양 당사자 서명·스탬프·페이지별 날인. 법무 검토 필수',alt:'MOU → SPA 전환 방식 (단기 거래)'},
+   {id:'d12',name:'Performance Bond (PB)',required:true,desc:'셀러 발행 이행 보증서 (계약 총액의 2%)',alt:'Standby LC (SBLC) 대체 가능'},
+   {id:'d13',name:'NCNDA + IMFPA',required:true,desc:'브로커 우회 금지·기밀 유지·수수료 보호 협약',alt:'NCND 단독 + 별도 Commission Letter'},
+   {id:'d14',name:'Allocation Letter',required:false,desc:'셀러가 정유소·물량 배정 확인 발행',alt:'Statement of Product Availability'},
+  ]},
+ {id:'p5',num:'05',title:'결제 및 금융 조건',en:'Payment & Financial Instruments',color:{bg:'#fee2e2',txt:'#991b1b'},
+  categories:[
+   {label:'결제 수단 설정',items:[
+    {id:'i40',text:'결제 방식 확정 (L/C / TT MT103 / SBLC / CAD / DLC MT700)',priority:'req'},
+    {id:'i41',text:'신용장 (L/C) 발행 시 조건 합치 여부 검토 (At Sight / Usance)',priority:'req'},
+    {id:'i42',text:'SBLC / BG 발행 은행 확인 및 SWIFT 메시지 검증',priority:'req'},
+    {id:'i43',text:'결제 타임라인 및 데드라인 일정 공유',priority:'req'},
+    {id:'i44',text:'바이어 자금 확인 (BCL / RWA / POF) 재검토',priority:'req'},
+   ]},
+   {label:'금융 리스크 관리',items:[
+    {id:'i45',text:'환율 리스크 헷징 여부 검토 (USD 외 통화 거래 시)',priority:'rec'},
+    {id:'i46',text:'유가 리스크 헷징 전략 (선물·스왑 활용) 검토',priority:'rec'},
+    {id:'i47',text:'해상 적하 보험 (Marine Cargo Insurance) 가입 – CIF 가액의 110%',priority:'req'},
+    {id:'i48',text:'Trade Finance 필요 여부 및 파이낸싱 구조 확인',priority:'rec'},
+   ]},
+  ],
+  documents:[
+   {id:'d15',name:'L/C (Letter of Credit) – MT700',required:true,desc:'바이어 거래 은행 발행 신용장',alt:'SBLC (MT760) + TT MT103 조합'},
+   {id:'d16',name:'SBLC (Standby Letter of Credit) – MT760',required:false,desc:'지급 보증용 스탠바이 신용장',alt:'Bank Guarantee (BG) / MT799'},
+   {id:'d17',name:'Marine Cargo Insurance Certificate',required:true,desc:'해상 적하 보험 증서 – CIF 가액의 110% 이상',alt:'Open Policy (포괄 보험) 확인서'},
+   {id:'d18',name:'Commercial Invoice (CI)',required:true,desc:'상업 송장 – 수출입 신고·통관·LC 인도 핵심 서류',alt:'Proforma Invoice (통관 전 단계)'},
+  ]},
+ {id:'p6',num:'06',title:'물류 및 선적 관리',en:'Logistics & Shipping',color:{bg:'#e0f2fe',txt:'#075985'},
+  categories:[
+   {label:'선박 및 터미널',items:[
+    {id:'i49',text:'선박 수배 (Vese:'Certificate of Title Transfer',required:true,desc:'소유권 이전 증명서 – 매도인→매수인 명의 이전 공식화',alt:'Delivery Receipt + B/L Endorsement'},
+   {id:'d27',name:'Inspection Report (SGS/Intertek)',required:true,desc:'독립 검사 보고서 – 품질·수량 검사 결과 공식 기록',alt:'Buyer Self-Inspection Report (분쟁 시 불인정)'},
+  ]},
+ {id:'p8',num:'08',title:'수수료 정산 및 사후 관리',en:'Settlement & Post-Deal',color:{bg:'#fef3c7',txt:'#92400e'},
+  categories:[
+   {label:'수수료 정산',items:[
+    {id:'i71',text:'거래 완료 후 커미션 Invoice 발행',priority:'req'},
+    {id:'i72',text:'수수료 수령 확인 및 내부 회계 처리',priority:'req'},
+    {id:'i73',text:'Fee Splitting 합의대로 공동 브로커 분배 처리',priority:'req'},
+    {id:'i74',text:'세금계산서·세금 신고 요건 충족 여부 확인',priority:'req'},
+   ]},
+   {label:'컴플라이언스 & 기록',items:[
+    {id:'i75',text:'모든 거래 서류 보관 (최소 5년, 규제 요건)',priority:'req'},
+    {id:'i76',text:'AML 보고 의무 (STR / CTR 등) 이행 확인',priority:'req'},
+    {id:'i77',text:'내부 거래 일지 (Deal Blotter) 업데이트',priority:'rec'},
+    {id:'i78',text:'클레임·분쟁 발생 여부 모니터링',priority:'rec'},
+   ]},
+   {label:'관계 관리',items:[
+    {id:'i79',text:'거래 결과 피드백 수집 및 거래처 관계 유지',priority:'rec'},
+    {id:'i80',text:'다음 거래 기회 탐색 및 파이프라인 업데이트',priority:'opt'},
+    {id:'i81',text:'시장 변화 기반 내부 리뷰 미팅 일정 수립',priority:'opt'},
+   ]},
+  ],
+  documents:[
+   {id:'d28',name:'Commission Invoice',required:true,desc:'브로커 수수료 청구 송장 – 지급 기한·방식 명시',alt:'Fee Agreement + Wire Transfer Instruction'},
+   {id:'d29',name:'거래 완료 확인서',required:false,desc:'양 당사자 서명 거래 완료 확인 서류',alt:'Discharge Port Q&Q Report로 대체'},
+   {id:'d30',name:'AML 보고서 (STR/CTR)',required:true,desc:'의심 거래 보고 및 고액 현금 거래 보고 – 규제 당국 제출',alt:'Internal Compliance Report'},
+  ]},
+];
+
+const DG=[
+ {id:'g1',term:'SCO',full:'Soft Corporate Offer',def:'셀러가 발행하는 비구속적 초기 가격 제안서.'},
+ {id:'g2',term:'FCO',full:'Full Corporate Offer',def:'셀러의 최종 공식 제안서. 바이어 서명 반환 시 구속력 발생.'},
+ {id:'g3',term:'LOI',full:'Letter of Intent',def:'바이어의 구매 의향서. 협상 시작을 위한 공식 문서.'},
+ {id:'g4',term:'ICPO',full:'Irrevocable Corporate Purchase Order',def:'바이어 발행 취소 불가 구매 주문서. 회사 레터헤드·서명·스탬프 필수. 5영업일 유효.'},
+ {id:'g5',term:'SPA',full:'Sale & Purchase Agreement',def:'최종 매매 계약서. 거래의 핵심 법적 구속 문서.'},
+ {id:'g6',term:'NCNDA',full:'Non-Circumvention Non-Disclosure Agreement',def:'브로커 우회 금지 및 기밀 유지 협약.'},
+ {id:'g7',term:'IMFPA',full:'Inter-Mediary Fee Protection Agreement',def:'중개 수수료 보호 협약. NCNDA와 함께 체결.'},
+ {id:'g8',term:'BCL',full:'Bank Comfort Letter',def:'바이어 거래 은행 발행 자금 확인 레터.'},
+ {id:'g9',term:'RWA',full:'Ready, Willing and Able',def:'BCL 대체 문서. SWIFT MT799로 전송 가능.'},
+ {id:'g10',term:'POF',full:'Proof of Funds',def:'자금 증빙 서류. BCL, RWA, 잔액 증명서 포함.'},
+ {id:'g11',term:'SBLC',full:'Standby Letter of Credit',def:'지급 보증용 스탠바이 신용장. SWIFT MT760으로 전송.'},
+ {id:'g12',term:'B/L',full:'Bill of Lading',def:'선하증권. 화물 수취증·운송계약서·권원증서 3e:'Certificate of Title Transfer',required:true,desc:'소유권 이전 증명서 – 매도인→매수인 명의 이전 공식화',alt:'Delivery Receipt + B/L Endorsement'},
+   {id:'d27',name:'Inspection Report (SGS/Intertek)',required:true,desc:'독립 검사 보고서 – 품질·수량 검사 결과 공식 기록',alt:'Buyer Self-Inspection Report (분쟁 시 불인정)'},
+  ]},
+ {id:'p8',num:'08',title:'수수료 정산 및 사후 관리',en:'Settlement & Post-Deal',color:{bg:'#fef3c7',txt:'#92400e'},
+  categories:[
+   {label:'수수료 정산',items:[
+    {id:'i71',text:'거래 완료 후 커미션 Invoice 발행',priority:'req'},
+    {id:'i72',text:'수수료 수령 확인 및 내부 회계 처리',priority:'req'},
+    {id:'i73',text:'Fee Splitting 합의대로 공동 브로커 분배 처리',priority:'req'},
+    {id:'i74',text:'세금계산서·세금 신고 요건 충족 여부 확인',priority:'req'},
+   ]},
+   {label:'컴플라이언스 & 기록',items:[
+    {id:'i75',text:'모든 거래 서류 보관 (최소 5년, 규제 요건)',priority:'req'},
+    {id:'i76',text:'AML 보고 의무 (STR / CTR 등) 이행 확인',priority:'req'},
+    {id:'i77',text:'내부 거래 일지 (Deal Blotter) 업데이트',priority:'rec'},
+    {id:'i78',text:'클레임·분쟁 발생 여부 모니터링',priority:'rec'},
+   ]},
+   {label:'관계 관리',items:[
+    {id:'i79',text:'거래 결과 피드백 수집 및 거래처 관계 유지',priority:'rec'},
+    {id:'i80',text:'다음 거래 기회 탐색 및 파이프라인 업데이트',priority:'opt'},
+    {id:'i81',text:'시장 변화 기반 내부 리뷰 미팅 일정 수립',priority:'opt'},
+   ]},
+  ],
+  documents:[
+   {id:'d28',name:'Commission Invoice',required:true,desc:'브로커 수수료 청구 송장 – 지급 기한·방식 명시',alt:'Fee Agreement + Wire Transfer Instruction'},
+   {id:'d29',name:'거래 완료 확인서',required:false,desc:'양 당사자 서명 거래 완료 확인 서류',alt:'Discharge Port Q&Q Report로 대체'},
+   {id:'d30',name:'AML 보고서 (STR/CTR)',required:true,desc:'의심 거래 보고 및 고액 현금 거래 보고 – 규제 당국 제출',alt:'Internal Compliance Report'},
+  ]},
+];
+
+const DG=[
+ {id:'g1',term:'SCO',full:'Soft Corporate Offer',def:'셀러가 발행하는 비구속적 초기 가격 제안서.'},
+ {id:'g2',term:'FCO',full:'Full Corporate Offer',def:'셀러의 최종 공식 제안서. 바이어 서명 반환 시 구속력 발생.'},
+ {id:'g3',term:'LOI',full:'Letter of Intent',def:'바이어의 구매 의향서. 협상 시작을 위한 공식 문서.'},
+ {id:'g4',term:'ICPO',full:'Irrevocable Corporate Purchase Order',def:'바이어 발행 취소 불가 구매 주문서. 회사 레터헤드·서명·스탬프 필수. 5영업일 유효.'},
+ {id:'g5',term:'SPA',full:'Sale & Purchase Agreement',def:'최종 매매 계약서. 거래의 핵심 법적 구속 문서.'},
+ {id:'g6',term:'NCNDA',full:'Non-Circumvention Non-Disclosure Agreement',def:'브로커 우회 금지 및 기밀 유지 협약.'},
+ {id:'g7',term:'IMFPA',full:'Inter-Mediary Fee Protection Agreement',def:'중개 수수료 보호 협약. NCNDA와 함께 체결.'},
+ {id:'g8',term:'BCL',full:'Bank Comfort Letter',def:'바이어 거래 은행 발행 자금 확인 레터.'},
+ {id:'g9',term:'RWA',full:'Ready, Willing and Able',def:'BCL 대체 문서. SWIFT MT799로 전송 가능.'},
+ {id:'g10',term:'POF',full:'Proof of Funds',def:'자금 증빙 서류. BCL, RWA, 잔액 증명서 포함.'},
+ {id:'g11',term:'SBLC',full:'Standby Letter of Credit',def:'지급 보증용 스탠바이 신용장. SWIFT MT760으로 전송.'},
+ {id:'g12',term:'B/L',full:'Bill of Lading',def:'선하증권. 화물 수취증·운송계약서·권원증서 3!doc.metadata.hasPendingWrites){
+      const d=doc.data();
+      if(d&&JSON.stringify(d)!==JSON.stringify(ST)){
+        ST=d; if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
+        renderSB(); renderMain();
+      }
+    }
+  },e=>console.warn('Firestore 실시간 오류:',e));
+}
+function showPage(page,pid){
+  CP=page; if(pid)CPID=pid;
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  if(page==='dashboard')document.getElementById('btn-dash')?.classList.add('active');
+  if(page==='glossary')document.getElementById('btn-glos')?.classList.add('active');
+  if(page==='history')document.getElementById('btn-hist')?.classList.add('active');
+  renderSB(); renderMain();
+}
+function renderMain(){
+  const el=document.getElementById('main-area'); if(!el)return;
+  if(CP==='dashboard')el.innerHTML=renderDash();
+  else if(CP==='glossary')el.innerHTML=renderGlossary();
+  else if(CP==='history')el.innerHTML=renderHistory();
+  else if(CP==='project')el.innerHTML=renderProj();
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────
+function renderSB(){
+  const el=document.getElementById('proj-list'); if(!el)return;
+  el.innerHTML=ST.projects.map(p=>`
+<div class="proj-item ${CPID===p.id&&CP==='project'?'active':''}" onclick="showPage('project','${p.id}')">
+  <div class="proj-dot"></div>
+  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${p.name}</span>
+  <span class="ps ps-${p.status}">${p.status==='active'?'진행':'완료'}</span>
+</div>`).join('')||'<div style="padding:5px 18px;font-size:11px;color:var(--text3)">프로젝트 없음</div>';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+function renderDash(){
+  const tot=ST.projects.length, act=ST.projects.filter(p=>p.status==='active').length;
+  let tc=0,ti=0;
+  ST.projects.forEach(p=>p.phases.forEach(ph=>ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks&&p.checks[it.id])tc++;}))));
+  const pcts=ST.projects.map(p=>{let c=0,t=0;p.phases.forEach(ph=>ph.categories.forEach(cat=>cat.items.forEach(it=>{t++;if(p.checks&&p.checks[it.id])c++;})));return t?Math.round(c/t*100):0;});
+  return `<div class="topbar"><div><div class="pg-title">대시보드</div><div class="pg-sub">OIL BROKERAGE MANAGEMENT SYSTEM</div></div><div class="topbar-actions"><button class="btn btn-primary" onclick="openNewProjModal()">+ 새 프로젝트</button></div></div>
+<div class="content">
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-lbl">전체 프로젝트</div><div class="stat-val">${tot}</div><div class="stat-sub">${act}개 진행 중</div></div>
+  <div class="stat-card"><div class="stat-lbl">전체 완료율</div><div class="stat-val stat-accent">${ti?Math.round(tc/ti*100):0}%</div><div class="stat-sub">${tc} / ${ti} 항목</div></div>
+  <div class="stat-card"><div class="stat-lbl">활성 프로젝트</div><div class="stat-val">${act}</div><div class="stat-sub">진행 중</div></div>
+  <div class="stat-card"><div class="stat-lbl">히스토리</div><div class="stat-val">${ST.history.length}</div><div class="stat-sub">총 활동 기록</div></div>
+</div>
+<div class="sec-title">프로젝트 현황</div>
+${!tot?'<div class="empty"><div style="font-size:28px;opacity:.3;margin-bottom:8px">◈</div><div>프로젝트가 없습니다. 새 프로젝트를 생성하세요.</div></div>':`
+<table class="proj-table">
+<thead><tr><th>프로젝트명</th><th>상태</th><th>1순위 바이어</th><th>셀러</th><th>선적항</th><th>거래 금액</th><th>진행률</th!doc.metadata.hasPendingWrites){
+      const d=doc.data();
+      if(d&&JSON.stringify(d)!==JSON.stringify(ST)){
+        ST=d; if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
+        renderSB(); renderMain();
+      }
+    }
+  },e=>console.warn('Firestore 실시간 오류:',e));
+}
+function showPage(page,pid){
+  CP=page; if(pid)CPID=pid;
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  if(page==='dashboard')document.getElementById('btn-dash')?.classList.add('active');
+  if(page==='glossary')document.getElementById('btn-glos')?.classList.add('active');
+  if(page==='history')document.getElementById('btn-hist')?.classList.add('active');
+  renderSB(); renderMain();
+}
+function renderMain(){
+  const el=document.getElementById('main-area'); if(!el)return;
+  if(CP==='dashboard')el.innerHTML=renderDash();
+  else if(CP==='glossary')el.innerHTML=renderGlossary();
+  else if(CP==='history')el.innerHTML=renderHistory();
+  else if(CP==='project')el.innerHTML=renderProj();
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────
+function renderSB(){
+  const el=document.getElementById('proj-list'); if(!el)return;
+  el.innerHTML=ST.projects.map(p=>`
+<div class="proj-item ${CPID===p.id&&CP==='project'?'active':''}" onclick="showPage('project','${p.id}')">
+  <div class="proj-dot"></div>
+  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${p.name}</span>
+  <span class="ps ps-${p.status}">${p.status==='active'?'진행':'완료'}</span>
+</div>`).join('')||'<div style="padding:5px 18px;font-size:11px;color:var(--text3)">프로젝트 없음</div>';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+function renderDash(){
+  const tot=ST.projects.length, act=ST.projects.filter(p=>p.status==='active').length;
+  let tc=0,ti=0;
+  ST.projects.forEach(p=>p.phases.forEach(ph=>ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks&&p.checks[it.id])tc++;}))));
+  const pcts=ST.projects.map(p=>{let c=0,t=0;p.phases.forEach(ph=>ph.categories.forEach(cat=>cat.items.forEach(it=>{t++;if(p.checks&&p.checks[it.id])c++;})));return t?Math.round(c/t*100):0;});
+  return `<div class="topbar"><div><div class="pg-title">대시보드</div><div class="pg-sub">OIL BROKERAGE MANAGEMENT SYSTEM</div></div><div class="topbar-actions"><button class="btn btn-primary" onclick="openNewProjModal()">+ 새 프로젝트</button></div></div>
+<div class="content">
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-lbl">전체 프로젝트</div><div class="stat-val">${tot}</div><div class="stat-sub">${act}개 진행 중</div></div>
+  <div class="stat-card"><div class="stat-lbl">전체 완료율</div><div class="stat-val stat-accent">${ti?Math.round(tc/ti*100):0}%</div><div class="stat-sub">${tc} / ${ti} 항목</div></div>
+  <div class="stat-card"><div class="stat-lbl">활성 프로젝트</div><div class="stat-val">${act}</div><div class="stat-sub">진행 중</div></div>
+  <div class="stat-card"><div class="stat-lbl">히스토리</div><div class="stat-val">${ST.history.length}</div><div class="stat-sub">총 활동 기록</div></div>
+</div>
+<div class="sec-title">프로젝트 현황</div>
+${!tot?'<div class="empty"><div style="font-size:28px;opacity:.3;margin-bottom:8px">◈</div><div>프로젝트가 없습니다. 새 프로젝트를 생성하세요.</div></div>':`
+<table class="proj-table">
+<thead><tr><th>프로젝트명</th><th>상태</th><th>1순위 바이어</th><th>셀러</th><th>선적항</th><th>거래 금액</th><th>진행률</thelds||[]).slice(0,8).map(f=>`<div class="meta-item"><div class="meta-k">${f.key}</div><div class="meta-v">${f.val||'—'}</div></div>`).join('')}
+  </div>
+</div>
+<div class="tabs">
+  ${['checklist','documents','parties','fields','history'].map(t=>`<div class="tab ${CT===t?'active':''}" onclick="switchTab('${t}')">${t==='checklist'?'업무 체크리스트':t==='documents'?'필요 서류':t==='parties'?'당사자 정보':t==='fields'?'필드 관리':'히스토리'}</div>`).join('')}
+</div>
+${body}
+</div>`;
+}
+function switchTab(t){CT=t;renderMain();}
+
+// ─── CHECKLIST ───────────────────────────────────────────
+function renderCL(p){
+  return p.phases.map((ph,pi)=>{
+    let pc=0,pt=0;ph.categories.forEach(c=>c.items.forEach(it=>{ti++;if(p.checks[it.id])pc++;}));
+    const pp=pt?Math.round(pc/pt*100):0;
+    return `<div class="phase-block">
+<div class="phase-hdr" onclick="togPh('ph_${p.id}_${pi}')">
+  <div class="ph-num" style="background:${ph.color.bg};color:${ph.color.txt}">${ph.num}</div>
+  <div style="flex:1"><div class="ph-title">${ph.title}</div><div class="ph-sub">${ph.en}</div></div>
+  <div style="display:flex;align-items:center;gap:7px">
+    <div class="pbar" style="width:56px"><div class="pbar-fill" style="width:${pp}%"></div></div>
+    <span class="ph-pill" style="background:${ph.color.bg};color:${ph.color.txt}">${pc}/${pt}</span>
+  </div>
+  <div class="chev" id="chev_ph_${p.id}_${pi}">▶</div>
+</div>
+<div class="phase-body" id="ph_${p.id}_${pi}">
+  ${ph.categories.map((cat,ci)=>`
+<div class="cat-lbl-row">
+  <span class="cat-lbl">${cat.label}</span>
+  <button class="btn btn-ghost btn-sm" style="font-size:10px" onclick="event.stopPropagation();delCat('${p.id}','${ph.id}',${ci})">카테고리 삭제</button>
+</div>
+${cat.items.map((it,ii)=>`
+<div class="check-row ${p.checks[it.id]?'done':''}" id="row_${it.id}" onclick="togChk('${p.id}','${it.id}','${encodeURIComponent(it.text)}')">
+  <input type="checkbox" ${p.checks[it.id]?'checked':''} onclick="event.stopPropagation();togChk('${p.id}','${it.id}','${encodeURIComponent(it.text)}')">
+  <div class="check-txt">${it.text}</div>
+  <span class="badge b-${it.priority==='req'?'req':it.priority==='rec'?'rec':'opt'}">${it.priority==='req'?'필수':it.priority==='rec'?'권고':'선택'}</span>
+  <button class="del-btn" onclick="event.stopPropagation();delCI('${p.id}','${ph.id}',${ci},${ii})">✕</button>
+</div>`).join('')}
+<div class="add-row">
+  <input class="add-inp" placeholder="항목 추가 후 Enter..." id="ai_${ph.id}_${ci}" onkeydown="if(event.key==='Enter')addCI('${p.id}','${ph.id}',${ci},this)">
+  <select class="add-sel" id="as_${ph.id}_${ci}"><option value="req">필수</option><option value="rec" selected>권고</option><option value="opt">선택</option></select>
+  <button class="add-btn" onclick="addCI('${p.id}','${ph.id}',${ci},document.getElementById('ai_${ph.id}_${ci}'))">추가</button>
+</div>`).join('')}
+  <div style="padding:8px 15px;border-top:1px solid var(--border);display:flex;gap:7px">
+    <input class="add-inp" style="flex:1" placeholder="새 카테고리명..." id="nc_${ph.id}">
+    <button class="add-btn" onclick="addCat('${p.id}','${ph.id}',document.getElementById('nc_${ph.id}'))">+ 카테고리</button>
+  </div>
+</div></div>`;
+  }).join('')+`<div style="margin-top:10px"><button class="btn btn-outline" style="width:100%" onclick="openAddPhase('${p.id}')">+ 새 단계(Phase) 추가</button></div>`;
+}
+
+// ─── DOCUMENTS ───────────────────────────────────────────
+function renderDocs(p){
+  return p.phases.map((ph,pi)=>`<div class="phase-block">
+<div class="phase-hdr" onclick="togPh('dc_${p.id}_${pi}')">
+  <div class="ph-num" style="background:${ph.color.bg};color:${ph.color.txt}">${ph.num}</div>
+  <div style="flex:1"><div class="ph-title">${ph.title}</div><div class="ph-sub">서류 ${ph.documents.length}건</div></div>
+  <div class="chev" id="chev_dc_${p.id}_${pi}">▶</div>
+</div>
+<div class="phase-body" id="dc_${p.id}_${pi}">
+  <div class="doc-grid">${ph.documents.map(d=>{
+    const ds=(p.docs||[]).find(x=>x.id===d.id), st=ds?ds.status:'pending';
+    return`<div class="doc-card">
+<button class="doc-del" onclick="delDoc('${p.id}','${ph.id}','${d.id}')">✕</button>
+<div class="doc-name">${d.name}</div>
+${d.required?'<span class="doc-req-lbl">필수</span>':'<span style="font-size:9px;color:var(--text3);font-family:IBM Plex Mono,monospace">선택</span>'}
+<div class="doc-desc">${d.desc}</div>
+${d.alt?`<div class="doc-alt">대체: ${d.alt}</div>`:''}
+<div class="doc-stat ${st==='received'?'received':st==='missing'?'missing':''}" onclick="cycleDoc('${p.id}','${d.id}')">
+  ${st==='received'?'✓ 수령 완료':st==='missing'?'✗ 미수령':'○ 대기중'}
+</div></div>`;}).join('')}</div>
+  <div class="add-doc-row">
+    <button class="btn btn-outline btn-sm" onclick="openAddDoc('${p.id}','${ph.id}')">+ 서류 추가</button>
+  </div>
+</div></div>`).join('');
+}
+
+// ─── PARTIES ─────────────────────────────────────────────
+function renderParties(p){
+  return `<div class="parties-grid">${p.parties.map(pt=>`
+<div class="party-card">
+  <div class="party-type-lbl">${pt.type}</div>
+  <span class="party-badge ${pt.cls}">${pt.type}</span>
+  <div class="party-name">${pt.name||'(미입력)'}</div>
+  <div class="party-info">${(pt.info||'').replace(/\n/g,'<br>')||'<span style="color:var(--text3);font-size:11px">상세 정보 없음</span>'}</div>
+  <div style="display:flex;gap:6px;margin-top:10px">
+    <button class="btn btn-outline btn-sm" style="flex:1" onclick="openPartyEdit('${p.id}','${pt.id}')">✎ 편집</button>
+    <button class="btn btn-danger btn-sm" onclick="delParty('${p.id}','${pt.id}')">✕</button>
+  </div>
+</div>`).join('')}</div>
+<button class="btn btn-outline" style="margin-top:9px" onclick="openAddParty('${p.id}')">+ 당사자 추가</button>`;
+}
+
+// ─── FIELDS ──────────────────────────────────────────────
+function renderFields(p){
+  return `<div class="fields-card">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  <div style="font-size:13px;font-weight:500">프로젝트 정보 필드</div>
+  <button class="btn btn-outline btn-sm" onclick="openAddField('${p.id}')">+ 필드 추가</button>
+</div>
+${(p.fields||[]).map(f=>`<div class="field-row" id="fr_${f.id}">
+  <div class="field-key">${f.key}</div>
+  <button class="field-val-btn" onclick="editFV('${p.id}','${f.id}')">${f.val||'<span style="color:var(--text3);font-weight:400">클릭하여 입력</span>'}</button>
+  <button class="field-del-btn" onclick="delField('${p.id}','${f.id}')">✕</button>
+</div>`).join('')}
+</div>`;
+}
+
+// ─── PROJ HISTORY ────────────────────────────────────────
+function renderPH(p){
+  const ph=ST.history.filter(h=>h.projId===p.id);
+  if(!ph.length)return'<div class="empty">히스토리 없음</div>';
+  return ph.map(h=>`<div class="hist-item">
+<div class="hist-dot" style="background:${h.color}"></div>
+<div class="hist-time">${new Date(h.time).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digiase-block">
+<div class="phase-hdr" onclick="togPh('dc_${p.id}_${pi}')">
+  <div class="ph-num" style="background:${ph.color.bg};color:${ph.color.txt}">${ph.num}</div>
+  <div style="flex:1"><div class="ph-title">${ph.title}</div><div class="ph-sub">서류 ${ph.documents.length}건</div></div>
+  <div class="chev" id="chev_dc_${p.id}_${pi}">▶</div>
+</div>
+<div class="phase-body" id="dc_${p.id}_${pi}">
+  <div class="doc-grid">${ph.documents.map(d=>{
+    const ds=(p.docs||[]).find(x=>x.id===d.id), st=ds?ds.status:'pending';
+    return`<div class="doc-card">
+<button class="doc-del" onclick="delDoc('${p.id}','${ph.id}','${d.id}')">✕</button>
+<div class="doc-name">${d.name}</div>
+${d.required?'<span class="doc-req-lbl">필수</span>':'<span style="font-size:9px;color:var(--text3);font-family:IBM Plex Mono,monospace">선택</span>'}
+<div class="doc-desc">${d.desc}</div>
+${d.alt?`<div class="doc-alt">대체: ${d.alt}</div>`:''}
+<div class="doc-stat ${st==='received'?'received':st==='missing'?'missing':''}" onclick="cycleDoc('${p.id}','${d.id}')">
+  ${st==='received'?'✓ 수령 완료':st==='missing'?'✗ 미수령':'○ 대기중'}
+</div></div>`;}).join('')}</div>
+  <div class="add-doc-row">
+    <button class="btn btn-outline btn-sm" onclick="openAddDoc('${p.id}','${ph.id}')">+ 서류 추가</button>
+  </div>
+</div></div>`).join('');
+}
+
+// ─── PARTIES ─────────────────────────────────────────────
+function renderParties(p){
+  return `<div class="parties-grid">${p.parties.map(pt=>`
+<div class="party-card">
+  <div class="party-type-lbl">${pt.type}</div>
+  <span class="party-badge ${pt.cls}">${pt.type}</span>
+  <div class="party-name">${pt.name||'(미입력)'}</div>
+  <div class="party-info">${(pt.info||'').replace(/\n/g,'<br>')||'<span style="color:var(--text3);font-size:11px">상세 정보 없음</span>'}</div>
+  <div style="display:flex;gap:6px;margin-top:10px">
+    <button class="btn btn-outline btn-sm" style="flex:1" onclick="openPartyEdit('${p.id}','${pt.id}')">✎ 편집</button>
+    <button class="btn btn-danger btn-sm" onclick="delParty('${p.id}','${pt.id}')">✕</button>
+  </div>
+</div>`).join('')}</div>
+<button class="btn btn-outline" style="margin-top:9px" onclick="openAddParty('${p.id}')">+ 당사자 추가</button>`;
+}
+
+// ─── FIELDS ──────────────────────────────────────────────
+function renderFields(p){
+  return `<div class="fields-card">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  <div style="font-size:13px;font-weight:500">프로젝트 정보 필드</div>
+  <button class="btn btn-outline btn-sm" onclick="openAddField('${p.id}')">+ 필드 추가</button>
+</div>
+${(p.fields||[]).map(f=>`<div class="field-row" id="fr_${f.id}">
+  <div class="field-key">${f.key}</div>
+  <button class="field-val-btn" onclick="editFV('${p.id}','${f.id}')">${f.val||'<span style="color:var(--text3);font-weight:400">클릭하여 입력</span>'}</button>
+  <button class="field-del-btn" onclick="delField('${p.id}','${f.id}')">✕</button>
+</div>`).join('')}
+</div>`;
+}
+
+// ─── PROJ HISTORY ────────────────────────────────────────
+function renderPH(p){
+  const ph=ST.history.filter(h=>h.projId===p.id);
+  if(!ph.length)return'<div class="empty">히스토리 없음</div>';
+  return ph.map(h=>`<div class="hist-item">
+<div class="hist-dot" style="background:${h.color}"></div>
+<div class="hist-time">${new Date(h.time).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+<div class="hist-msg">${h.msg}</div>
+</div>`).join('');
+}
+
+// ─── GLOSSARY ────────────────────────────────────────────
+function renderGlossary(){
+  if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));
+  return `<div class="topbar"><div><div class="pg-title">무역 용어 사전</div><div class="pg-sub">OIL TRADE GLOSSARY</div></div><div class="topbar-actions"><button class="btn btn-primary" onclick="openAddGlos()">+ 용어 추가</button></div></div>
+<div class="content"><div class="glos-grid">${ST.glossary.map(g=>`
+<div class="glos-item">
+  <button class="glos-del" onclick="delGlos('${g.id}')">✕</button>
+  <div class="glos-term">${g.term}</div>
+  <div class="glos-full">${g.full}</div>
+  <div class="glos-def">${g.def}</div>
+</div>`).join('')}</div></div>`;
+}
+function openAddGlos(){showModal(`<div class="modal-title">용어 추가</div>
+<div class="fg"><label class="fl">약어 / 용어</label><input class="fi" id="ng_t" placeholder="예: FOB"></div>
+<div class="fg"><label class="fl">풀네임</label><input class="fi" id="ng_f" placeholder="예: Free On Board"></div>
+<div class="fg"><label class="fl">설명</label><textarea class="fi" id="ng_d" placeholder="용어 설명"></textarea></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="addGlos()">추가</button></div>`);}
+function addGlos(){const t=v('ng_t'),f=v('ng_f'),d=v('ng_d');if(!t||!d){alert('약어와 설명을 입력하세요');return;}ST.glossary.push({id:'g'+Date.now(),term:t,full:f,def:d});saveST();closeModal();renderMain();showToast('용어가 추가되었습니다');}
+function delGlos(id){if(!confirm('이 용어를 삭제할까요?'))return;ST.glossary=ST.glossary.filter(g=>g.id!==id);saveST();renderMain();}
+
+// ─── HISTORY PAGE ────────────────────────────────────────
+function renderHistory(){
+  return `<div class="topbar"><div><div class="pg-title">전체 히스토리</div><div class="pg-sub">ALL ACTIVITY LOG</div></div><div class="topbar-actions"><button class="btn btn-outline" onclick="if(confirm('히스토리를 모두 삭제할까요?')){ST.history=[];saveST();renderMain()}">초기화</button></div></div>
+<div class="content">${!ST.history.length?'<div class="empty">히스토리 없음</div>':ST.history.map(h=>`<div class="hist-item">
+<div class="hist-dot" style="background:${h.color}"></div>
+<div class="hist-time">${new Date(h.time).toLocaleString('ko-KR')}</div>
+<div class="hist-msg">${h.projName?`<span style="color:var(--accent);font-weight:500">[${h.projName}]</span> `:''}${h.msg}</div>
+</div>`).join('')}</div>`;
+}
+
+// ─── CHECKLIST ACTIONS ───────────────────────────────────
+function togPh(id){const b=document.getElementById(id),c=document.getElementById('chev_'+id);if(b){b.classList.toggle('open');c&&c.classList.toggle('open');}}
+function togChk(pid,iid,tenc){
+  const p=ST.projects.find(x=>x.id===pid);if(!p.checks)p.checks={};
+  p.checks[iid]=!p.checks[iid];
+  const row=document.getElementById('row_'+iid),cb=row?.querySelector('input');
+  if(row)row.classList.toggle('done',p.checks[iid]);if(cb)cb.checked=!!p.checks[iid];
+  addHist(`${p.checks[iid]?'✓':'○'} ${decodeURIComponent(tenc)}`,p.checks[iid]?'#2e7d52':'#9e9b93',pid,p.name);
+  saveST();
+}
+function addCI(pid,phid,ci,inp){
+  const txt=inp.value.trim();if(!txt)return;
+  const sel=document.getElementById(inp.id.replace('ai_','as_'));
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  ph.categories[ci].items.push({id:'ci'+Date.now(),text:txt,priority:sel?.value||'rec'});
+  inp.value='';addHist(`항목 추가: ${txt}`,'#b8820a',pid,p.name);saveST();renderMain();showToast('항목 추가됨');
+  setTimeout(()=>document.getElementById(inp.id)?.focus(),80);
+}
+function delCI(pid,phid,ci,ii){
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  const it=ph.categories[ci].items[ii];if(!confirm(`"${it.text}" 삭제?`))return;
+  ph.categories[ci].items.splice(ii,1);addHist(`항목 삭제: ${it.text}`,'#c94040',pid,p.name);saveST();renderMain();
+}
+function delCat(pid,phid,ci){
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  const cat=ph.categories[ci];if(!confirm(`"${cat.label}" 카테고리를 삭제할까요?`))return;
+  ph.categories.splice(ci,1);addHist(`카테고리 삭제: ${cat.label}`,'#c94040',pid,p.name);saveST();renderMain();
+}
+function addCat(pid,phid,inp){
+  const lbl=inp.value.trim();if(!lbl)return;
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  ph.categories.push({label:lbl,items:[]});inp.value='';addHist(`카테고리 추가: ${lbl}`,'#b8820a',pid,p.name);saveST();renderMain();showToast('카테고리 추가됨');
+}
+function openAddPhase(pid){showModal(`<div class="modal-title">새 단계(Phase) 추가</div>
+<div class="fg2"><div class="fg"><label class="fl">번호</label><input class="fi" id="np_num" placeholder="예: 09"></div><div class="fg"><label class="fl">제목</label><input class="fi" id="np_tit" placeholder="단계 제목"></div></div>
+<div class="fg"><label class="fl">영문명</label><input class="fi" id="np_en" placeholder="Phase title in English"></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="confAddPhase('${pid}')">추가</button></div>`);}
+function confAddPhase(pid){
+  const tit=v('np_tit');if(!tit){alert('제목을 입력하세요');return;}
+  const p=ST.projects.find(x=>x.id===pid);
+  const cols=[{bg:'#dbeafe',txt:'#1a5fa8'},{bg:'#dcfce7',txt:'#166534'},{bg:'#fef3c7',txt:'#92400e'},{bg:'#fce7f3',txt:'#9d174d'},{bg:'#e0f2fe',txt:'#075985'}];
+  p.phases.push({id:'ph'+Date.now(),num:v('np_num')||String(p.phases.length+1).padStart(2,'0'),title:tit,en:v('np_en')||tit,color:cols[p.phases.length%cols.length],categories:[{label:'기본 항목',items:[]}],documents:[]});
+  addHist(`단계 추가: ${tit}`,'#b8820a',pid,p.name);saveST();closeModal();renderMain();showToast('단계 추가됨');
+}
+
+// ─── DOCUMENT ACTIONS ────────────────────────────────────
+function cycleDoc(pid,did){
+  const p=ST.projects.find(x=>x.id===pid);if(!p.docs)p.docs=[];
+  const idx=p.docs.findIndex(d=>d.id===did),ss=['pending','received','missing'];
+  if(idx===-1)p.docs.push({id:did,status:'received'});
+  else p.docs[idx].status=ss[(ss.indexOf(p.docs[idx].status)+1)%3];
+  addHist(`서류 상태 변경: ${did}`,'#1a5fa8',pid,p.name);saveST();renderMain();
+}
+function openAddDoc(pid,phid){showModal(`<div class="modal-title">서류 추가</div>
+<div class="fg"><label class="fl">서류명</label><input class="fi" id="nd_n" placeholder="서류명"></div>
+<div class="fg"><label class="fl">설명</label><input class="fi" id="nd_d" placeholder="서류 설명"></div>
+<div class="fg"><label class="fl">대체 서류 (없으면 빈칸)</label><input class="fi" id="nd_a" placeholder="대체 가능 서류명"></div>
+<div class="fg"><label class="fl">필수 여부</label><select class="fi" id="nd_r"><option value="true">필수</option><option value="false">선택</option></select></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="confAddDoc('${pid}','${phid}')">추가</button></div>`);}
+function confAddDoc(pid,phid){
+  const n=v('nd_n');if(!n){alert('서류명을 입력하세요');return;}
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  ph.documents.push({id:'doc'+Date.now(),name:n,desc:v('nd_d'),alt:v('nd_a')||null,required:v('nd_r')==='true'});
+  addHist(`서류 추가: ${n}`,'#b8820a',pid,p.name);saveST();closeModal();renderMain();showToast('서류 추가됨');
+}
+function delDoc(pid,phid,did){
+  const p=ST.projects.find(x=>x.id===pid),ph=p.phases.find(x=>x.id===phid);
+  const d=ph.documents.find(x=>x.id===did);if(!confirm(`"${d.name}" 삭제?`))return;
+  ph.documents=ph.documents.filter(x=>x.id!==did);addHist(`서류 삭제: ${d.name}`,'#c94040',pid,p.name);saveST();renderMain();
+}
+
+// ─── PARTY ACTIONS ───────────────────────────────────────
+function openPartyEdit(pid,ptid){
+  const p=ST.projects.find(x=>x.id===pid),pt=p.parties.find(x=>x.id===ptid);
+  showModal(`<div class="modal-title">${pt.type} 정보 편집</div>
+<div class="fg"><label class="fl">이름 / 회사명</label><input class="fi" id="pte_n" value="${esc(pt.name)}"></div>
+<div class="fg"><label class="fl">상세 정보</label><textarea class="fi" id="pte_i" rows="5">${esc(pt.info)}</textarea></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="saveParty('${pid}','${ptid}')">저장</button></div>`);}
+function saveParty(pid,ptid){
+  const p=ST.projects.find(x=>x.id===pid),pt=p.parties.find(x=>x.id===ptid);
+  pt.name=v('pte_n');pt.info=v('pte_i');addHist(`당사자 수정: ${pt.type} — ${pt.name}`,'#b8820a',pid,p.name);saveST();closeModal();renderMain();showToast('저장됨');
+}
+function openAddParty(pid){showModal(`<div class="modal-title">당사자 추가</div>
+<div class="fg"><label class="fl">역할/유형</label><input class="fi" id="pa_t" placeholder="예: 검사 기관, 보험사, 법무법인"></div>
+<div class="fg"><label class="fl">이름 / 회사명</label><input class="fi" id="pa_n" placeholder="회사명 또는 이름"></div>
+<div class="fg"><label class="fl">상세 정보</label><textarea class="fi" id="pa_i" rows="4" placeholder="담당자, 연락처 등"></textarea></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="confAddParty('${pid}')">추가</button></div>`);}
+function confAddParty(pid){
+  const t=v('pa_t');if(!t){alert('역할/유형을 입력하세요');return;}
+  const p=ST.projects.find(x=>x.id===pid);if(!p.parties)p.parties=[];
+  p.parties.push({id:'pt'+Date.now(),type:t,cls:'pb3',name:v('pa_n'),info:v('pa_i')});
+  addHist(`당사자 추가: ${t}`,'#b8820a',pid,p.name);saveST();closeModal();renderMain();showToast('당사자 추가됨');
+}
+function delParty(pid,ptid){
+  const p=ST.projects.find(x=>x.id===pid),pt=p.parties.find(x=>x.id===ptid);
+  if(!confirm(`"${pt.type}" 삭제?`))return;
+  p.parties=p.parties.filter(x=>x.id!==ptid);addHist(`당사자 삭제: ${pt.type}`,'#c94040',pid,p.name);saveST();renderMain();
+}
+
+// ─── FIELD ACTIONS ───────────────────────────────────────
+function editFV(pid,fid){
+  const p=ST.projects.find(x=>x.id===pid),f=p.fields.find(x=>x.id===fid);
+  const btn=document.querySelector(`#fr_${fid} .field-val-btn`);if(!btn)return;
+  btn.outerHTML=`<input class="field-inp" id="fi_${fid}" value="${esc(f.val)}" onblur="saveFV('${pid}','${fid}')" onkeydown="if(event.key==='Enter')saveFV('${pid}','${fid}')">`;
+  document.getElementById('fi_'+fid)?.focus();
+}
+function saveFV(pid,fid){
+  const p=ST.projects.find(x=>x.id===pid),f=p.fields.find(x=>x.id===fid);
+  const inp=document.getElementById('fi_'+fid);if(!inp)return;
+  f.val=inp.value.trim();addHist(`필드 수정: ${f.key} = ${f.val}`,'#b8820a',pid,p.name);saveST();renderMain();
+}
+function openAddField(pid){showModal(`<div class="modal-title">필드 추가</div>
+<div class="fg"><label class="fl">필드명 (Key)</label><input class="fi" id="nf_k" placeholder="예: 담당 법무법인"></div>
+<div class="fg"><label class="fl">값 (Value)</label><input class="fi" id="nf_v" placeholder="내용 입력 (나중에 수정 가능)"></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="confAddField('${pid}')">추가</button></div>`);}
+function confAddField(pid){
+  const k=v('nf_k');if(!k){alert('필드명을 입력하세요');return;}
+  const p=ST.projects.find(x=>x.id===pid);if(!p.fields)p.fields=defaultFields();
+  p.fields.push({id:'f'+Date.now(),key:k,val:v('nf_v')});
+  addHist(`필드 추가: ${k}`,'#b8820a',pid,p.name);saveST();closeModal();renderMain();showToast('필드 추가됨');
+}
+function delField(pid,fid){
+  const p=ST.projects.find(x=>x.id===pid),f=p.fields.find(x=>x.id===fid);
+  if(!confirm(`"${f.key}" 삭제?`))return;
+  p.fields=p.fields.filter(x=>x.id!==fid);addHist(`필드 삭제: ${f.key}`,'#c94040',pid,p.name);saveST();renderMain();showToast('필드 삭제됨');
+}
+
+// ─── PROJECT MODALS ──────────────────────────────────────
+function openNewProjModal(){showModal(`<div class="modal-title">새 프로젝트 생성</div>
+<div class="fg"><label class="fl">프로젝트명 *</label><input class="fi" id="np_nm" placeholder="예: BLCO-2025-Q3"></div>
+<div class="fg"><label class="fl">상태</label><select class="fi" id="np_st"><option value="active">진행중</option><option value="closed">완료</option></select></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="createProj()">생성</button></div>`);}
+function createProj(){
+  const nm=v('np_nm');if(!nm){alert('프로젝트명을 입력하세요');return;}
+  const id='PROJ-'+Date.now();
+  ST.projects.push({id,name:nm,status:v('np_st')||'active',phases:JSON.parse(JSON.stringify(DP)),checks:{},docs:[],fields:defaultFields(),parties:[
+    {id:'pt1',type:'1순위 바이어',cls:'pb1',name:'',info:''},{id:'pt2',type:'2순위 바이어',cls:'pb2',name:'',info:''},
+    {id:'pt3',type:'3순위 바이어',cls:'pb3',name:'',info:''},{id:'pt4',type:'셀러',cls:'pb3',name:'',info:''},
+    {id:'pt5',type:'선사 / 선주',cls:'pb3',name:'',info:''},{id:'pt6',type:'탱크 / 터미널',cls:'pb3',name:'',info:''},
+  ],createdAt:new Date().toISOString()});
+  addHist(`프로젝트 생성: ${nm}`,'#2e7d52',id,nm);saveST();closeModal();
+  CPID=id;CP='project';CT='fields';renderSB();renderMain();showToast('프로젝트가 생성되었습니다');
+}
+function openEditProjModal(pid){
+  const p=ST.projects.find(x=>x.id===pid);
+  showModal(`<div class="modal-title">프로젝트 편집</div>
+<div class="fg"><label class="fl">프로젝트명</label><input class="fi" id="ep_nm" value="${esc(p.name)}"></div>
+<div class="fg"><label class="fl">상태</label><select class="fi" id="ep_st"><option value="active" ${p.status==='active'?'selected':''}>진행중</option><option value="closed" ${p.status==='closed'?'selected':''}>완료</option></select></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">취소</button><button class="btn btn-primary" onclick="updateProj('${pid}')">저장</button></div>`);}
+function updateProj(pid){
+  const p=ST.projects.find(x=>x.id===pid);p.name=v('ep_nm')||p.name;p.status=v('ep_st');
+  addHist(`프로젝트 수정: ${p.name}`,'#b8820a',pid,p.name);saveST();closeModal();renderSB();renderMain();showToast('저장됨');
+}
+function delProj(pid){
+  const p=ST.projects.find(x=>x.id===pid);if(!confirm(`"${p.name}" 프로젝트를 삭제할까요?`))return;
+  addHist(`프로젝트 삭제: ${p.name}`,'#c94040');
+  ST.projects=ST.projects.filter(x=>x.id!==pid);saveST();CPID=null;CP='dashboard';renderSB();renderMain();showToast('삭제됨');
+}
+
+// ─── JSON ─────────────────────────────────────────────────
+function exportJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(ST,null,2)],{type:'application/json'}));a.download='oil-brokerage-'+new Date().toISOString().slice(0,10)+'.json';a.click();showToast('JSON 내보내기 완료');}
+function importJSON(){document.getElementById('import-file').click();}
+function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.projects&&Array.isArray(d.projects)){ST=d;if(!ST.glossary)ST.glossary=JSON.parse(JSON.stringify(DG));saveST();renderSB();renderMain();showToast('가져오기 완료 ('+d.projects.length+'개)');}else alert('올바른 형식이 아닙니다');}catch(err){alert('JSON 오류: '+err.message);}};r.readAsText(f);e.target.value='';}
+
+// ─── HELPERS ─────────────────────────────────────────────
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');}
+function showModal(h){document.getElementById('modal-content').innerHTML=h;document.getElementById('modal-overlay').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+function showToast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2300);}
+</script>
+</body>
+</html>
